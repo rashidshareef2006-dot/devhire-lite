@@ -3,50 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="DevHire Lite — Find developer jobs. Apply in one click." />
-  <title>DevHire Lite — Find Developer Jobs</title>
+  <meta name="description" content="DevHire Lite — Hire your next developer. Fast." />
+  <title>DevHire Lite — Hire Developers Fast</title>
+
+  <!-- Indeed-style font: Noto Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Indeed Blue custom colors -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            indeed: {
+              blue: '#003A9B',
+              ink: '#00123C',
+              light: '#F3F2F1',
+              hover: '#2557A7',
+            }
+          },
+          fontFamily: {
+            sans: ['Noto Sans', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="bg-white text-slate-800 antialiased font-sans">
 
   <!-- Skip link (a11y) -->
   <a href="#main"
      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50
-            focus:bg-indigo-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">
+            focus:bg-indeed-blue focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">
     Skip to main content
   </a>
 
-  <!-- HEADER -->
-  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+  <!-- ==================== HEADER ==================== -->
+  <header class="sticky top-0 z-40 bg-white border-b border-slate-200">
     <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
       <div class="flex items-center justify-between h-16">
 
         <!-- Logo -->
-        <a href="index.html" class="flex items-center gap-2 font-bold text-lg text-indigo-600">
+        <a href="index.html" class="flex items-center gap-2 font-bold text-xl text-indeed-blue">
           <span aria-hidden="true">🚀</span>
-          <span>DevHire<span class="text-slate-800">Lite</span></span>
+          <span>DevHire<span class="text-indeed-ink">Lite</span></span>
         </a>
 
         <!-- Desktop menu -->
         <ul class="hidden md:flex items-center gap-8 text-sm font-medium">
-          <li><a href="jobs.html" class="hover:text-indigo-600 transition">Jobs</a></li>
-          <li><a href="#" class="hover:text-indigo-600 transition">Companies</a></li>
-          <li><a href="#" class="hover:text-indigo-600 transition">About</a></li>
+          <li><a href="jobs.html" class="text-slate-700 hover:text-indeed-blue transition">Jobs</a></li>
+          <li><a href="#" class="text-slate-700 hover:text-indeed-blue transition">Companies</a></li>
+          <li><a href="#" class="text-slate-700 hover:text-indeed-blue transition">Pricing</a></li>
         </ul>
 
-        <!-- Auth actions -->
+        <!-- Auth buttons -->
         <div class="hidden md:flex items-center gap-3">
           <a href="login.html"
-             class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 transition">
+             class="px-4 py-2 text-sm font-semibold text-indeed-blue border border-indeed-blue rounded-lg
+                    hover:bg-indeed-blue hover:text-white transition">
             Login
           </a>
           <a href="register.html"
-             class="px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg
-                    hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500
+             class="px-4 py-2 text-sm font-semibold bg-indeed-blue text-white rounded-lg
+                    hover:bg-indeed-hover focus:outline-none focus:ring-2 focus:ring-indeed-blue
                     focus:ring-offset-2 transition">
-            Get Started
+            Post a Job
           </a>
         </div>
 
@@ -54,7 +83,7 @@
         <button id="menuBtn" type="button"
                 aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobileMenu"
                 class="md:hidden p-2 rounded-lg hover:bg-slate-100 focus:outline-none
-                       focus:ring-2 focus:ring-indigo-500">
+                       focus:ring-2 focus:ring-indeed-blue">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
@@ -66,145 +95,382 @@
         <li><a href="jobs.html" class="block px-3 py-2 rounded-lg hover:bg-slate-100">Jobs</a></li>
         <li><a href="#" class="block px-3 py-2 rounded-lg hover:bg-slate-100">Companies</a></li>
         <li><a href="login.html" class="block px-3 py-2 rounded-lg hover:bg-slate-100">Login</a></li>
-        <li><a href="register.html" class="block px-3 py-2 rounded-lg bg-indigo-600 text-white text-center">Get Started</a></li>
+        <li><a href="register.html" class="block px-3 py-2 rounded-lg bg-indeed-blue text-white text-center">Post a Job</a></li>
       </ul>
     </nav>
   </header>
 
-  <!-- MAIN -->
+  <!-- ==================== MAIN ==================== -->
   <main id="main">
 
-    <!-- HERO -->
-    <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 text-center">
-      <span class="inline-block px-3 py-1 text-xs font-semibold bg-indigo-100 text-indigo-700 rounded-full mb-4">
-        #1 Job Portal for Developers
-      </span>
+    <!-- ===== HERO SECTION (Indeed style) ===== -->
+    <section class="bg-indeed-light">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <div class="max-w-3xl">
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-indeed-ink leading-tight">
+            Let's hire your next
+            <span class="text-indeed-blue">great developer</span>.
+            Fast.
+          </h1>
 
-      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900">
-        Find your next
-        <span class="text-indigo-600">developer job</span>
-      </h1>
+          <p class="mt-6 text-lg sm:text-xl text-slate-600 leading-relaxed">
+            No matter the skills, experience or qualifications you're looking for,
+            you'll find the right people here.
+          </p>
 
-      <p class="mt-6 max-w-2xl mx-auto text-lg text-slate-600">
-        Hand-picked jobs from top companies. Apply in one click and track your applications.
-      </p>
-
-      <!-- Search form -->
-      <form class="mt-10 max-w-3xl mx-auto bg-white p-2 rounded-2xl shadow-lg border border-slate-200
-                   flex flex-col sm:flex-row gap-2"
-            role="search" aria-label="Job search">
-        <label for="keyword" class="sr-only">Job title or keyword</label>
-        <input id="keyword" name="keyword" type="search" placeholder="Job title, keyword..."
-               class="flex-1 px-4 py-3 rounded-xl text-slate-800 placeholder-slate-400
-                      focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-
-        <label for="location" class="sr-only">Location</label>
-        <input id="location" name="location" type="text" placeholder="Location or Remote"
-               class="flex-1 px-4 py-3 rounded-xl text-slate-800 placeholder-slate-400
-                      focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-
-        <button type="submit"
-                class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl
-                       hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500
-                       focus:ring-offset-2 transition">
-          Search
-        </button>
-      </form>
-
-      <!-- Stats -->
-      <dl class="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-3xl mx-auto">
-        <div>
-          <dt class="text-sm text-slate-500">Open Jobs</dt>
-          <dd class="text-2xl font-bold text-slate-900">1,240+</dd>
-        </div>
-        <div>
-          <dt class="text-sm text-slate-500">Companies</dt>
-          <dd class="text-2xl font-bold text-slate-900">320+</dd>
-        </div>
-        <div>
-          <dt class="text-sm text-slate-500">Candidates</dt>
-          <dd class="text-2xl font-bold text-slate-900">18K+</dd>
-        </div>
-        <div>
-          <dt class="text-sm text-slate-500">Hired</dt>
-          <dd class="text-2xl font-bold text-slate-900">4.5K</dd>
-        </div>
-      </dl>
-    </section>
-
-    <!-- FEATURED JOBS -->
-    <section class="bg-white border-y border-slate-200 py-16" aria-labelledby="featured-heading">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        <div class="flex items-end justify-between mb-8">
-          <div>
-            <h2 id="featured-heading" class="text-2xl sm:text-3xl font-bold text-slate-900">
-              Featured Jobs
-            </h2>
-            <p class="text-slate-600 mt-1">Latest openings from top companies</p>
+          <div class="mt-10 flex flex-col sm:flex-row gap-4">
+            <a href="register.html"
+               class="inline-flex items-center justify-center px-8 py-4 bg-indeed-blue text-white font-bold rounded-xl
+                      hover:bg-indeed-hover focus:outline-none focus:ring-2 focus:ring-indeed-blue
+                      focus:ring-offset-2 transition text-base">
+              Post a Job — It's Free
+            </a>
+            <a href="jobs.html"
+               class="inline-flex items-center justify-center px-8 py-4 border-2 border-indeed-blue text-indeed-blue
+                      font-bold rounded-xl hover:bg-indeed-blue hover:text-white transition text-base">
+              Browse Jobs
+            </a>
           </div>
-          <a href="jobs.html" class="hidden sm:inline text-sm font-semibold text-indigo-600 hover:text-indigo-700">
-            View all →
-          </a>
-        </div>
 
-        <div id="jobList" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <!-- JS se cards aayenge -->
+          <p class="mt-6 text-sm text-slate-500">
+            ✅ 20.1M+ monthly users &nbsp;·&nbsp; ✅ 250M+ resumes &nbsp;·&nbsp; ✅ 60+ countries
+          </p>
         </div>
-
       </div>
     </section>
 
-    <!-- CTA -->
-    <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-      <div class="bg-indigo-600 rounded-3xl px-8 py-14 text-center text-white">
-        <h2 class="text-3xl sm:text-4xl font-bold">Are you a recruiter?</h2>
-        <p class="mt-4 text-indigo-100 max-w-xl mx-auto">
-          Post jobs and reach thousands of qualified developers in minutes.
+    <!-- ===== FEATURES GRID (Indeed style: 4 columns) ===== -->
+    <section class="bg-white py-16 sm:py-20" aria-labelledby="features-heading">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="text-center max-w-2xl mx-auto mb-14">
+          <h2 id="features-heading" class="text-3xl sm:text-4xl font-bold text-indeed-ink">
+            Manage your hiring from start to finish
+          </h2>
+          <p class="mt-4 text-slate-600">
+            Everything you need to find, attract, and hire the best developers.
+          </p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          <!-- Card 1 -->
+          <div class="group p-6 rounded-2xl border border-slate-200 bg-white
+                      hover:border-indeed-blue hover:shadow-lg transition-all duration-300">
+            <div class="w-14 h-14 rounded-xl bg-indeed-blue/10 flex items-center justify-center text-2xl mb-5
+                        group-hover:bg-indeed-blue/20 transition">
+              📝
+            </div>
+            <h3 class="text-lg font-bold text-indeed-ink mb-2">Post a Job</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Get started with a job post. Reach 20.1M unique monthly users.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="group p-6 rounded-2xl border border-slate-200 bg-white
+                      hover:border-indeed-blue hover:shadow-lg transition-all duration-300">
+            <div class="w-14 h-14 rounded-xl bg-indeed-blue/10 flex items-center justify-center text-2xl mb-5
+                        group-hover:bg-indeed-blue/20 transition">
+              🔍
+            </div>
+            <h3 class="text-lg font-bold text-indeed-ink mb-2">Find Quality Applicants</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Customise your post with screening tools to narrow down candidates.
+            </p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="group p-6 rounded-2xl border border-slate-200 bg-white
+                      hover:border-indeed-blue hover:shadow-lg transition-all duration-300">
+            <div class="w-14 h-14 rounded-xl bg-indeed-blue/10 flex items-center justify-center text-2xl mb-5
+                        group-hover:bg-indeed-blue/20 transition">
+              💬
+            </div>
+            <h3 class="text-lg font-bold text-indeed-ink mb-2">Make Connections</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Track, message, invite and interview directly on DevHire Lite.
+            </p>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="group p-6 rounded-2xl border border-slate-200 bg-white
+                      hover:border-indeed-blue hover:shadow-lg transition-all duration-300">
+            <div class="w-14 h-14 rounded-xl bg-indeed-blue/10 flex items-center justify-center text-2xl mb-5
+                        group-hover:bg-indeed-blue/20 transition">
+              ✅
+            </div>
+            <h3 class="text-lg font-bold text-indeed-ink mb-2">Hire Confidently</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Helpful resources for every step of the hiring process.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== DASHBOARD PREVIEW (Indeed style: 2 columns) ===== -->
+    <section class="bg-indeed-light py-16 sm:py-20" aria-labelledby="dashboard-heading">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+
+          <!-- Left: Text -->
+          <div>
+            <h2 id="dashboard-heading" class="text-3xl sm:text-4xl font-bold text-indeed-ink">
+              Your dashboard features
+            </h2>
+            <p class="mt-4 text-slate-600 leading-relaxed">
+              Your dashboard helps you keep up with your hiring priorities.
+              Manage open jobs, update job statuses and filter applications easily.
+            </p>
+
+            <ul class="mt-8 space-y-4">
+              <li class="flex items-start gap-3">
+                <span class="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-indeed-blue/10 flex items-center justify-center text-xs font-bold text-indeed-blue">1</span>
+                <span class="text-slate-700">Mark the applicants you're interested in</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-indeed-blue/10 flex items-center justify-center text-xs font-bold text-indeed-blue">2</span>
+                <span class="text-slate-700">Schedule and conduct virtual interviews directly</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-indeed-blue/10 flex items-center justify-center text-xs font-bold text-indeed-blue">3</span>
+                <span class="text-slate-700">Track applications in real-time</span>
+              </li>
+            </ul>
+
+            <a href="dashboard.html"
+               class="inline-block mt-8 px-6 py-3 bg-indeed-blue text-white font-semibold rounded-xl
+                      hover:bg-indeed-hover transition">
+              Explore Dashboard →
+            </a>
+          </div>
+
+          <!-- Right: Mock dashboard preview -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-slate-800">Recent Applications</h3>
+              <span class="text-xs text-slate-400">Live preview</span>
+            </div>
+
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                <div class="w-10 h-10 rounded-full bg-indeed-blue/10 flex items-center justify-center text-sm font-bold text-indeed-blue">RS</div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-slate-800 truncate">Rashi Sharma</p>
+                  <p class="text-xs text-slate-500">Frontend Developer · 2y exp</p>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium">Shortlisted</span>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-sm font-bold text-amber-700">AK</div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-slate-800 truncate">Aman Kumar</p>
+                  <p class="text-xs text-slate-500">Backend Engineer · 4y exp</p>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-medium">In Review</span>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                <div class="w-10 h-10 rounded-full bg-indeed-blue/10 flex items-center justify-center text-sm font-bold text-indeed-blue">PJ</div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-slate-800 truncate">Priya Joshi</p>
+                  <p class="text-xs text-slate-500">Full Stack Dev · 3y exp</p>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full bg-slate-200 text-slate-600 font-medium">New</span>
+              </div>
+            </div>
+
+            <p class="mt-4 text-xs text-center text-slate-400">
+              116 resumes match your criteria
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CANDIDATE MATCHING (Indeed style) ===== -->
+    <section class="bg-white py-16 sm:py-20" aria-labelledby="match-heading">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="text-center max-w-2xl mx-auto mb-12">
+          <span class="inline-block px-3 py-1 text-xs font-bold bg-indeed-blue/10 text-indeed-blue rounded-full mb-4">
+            SMART SOURCING
+          </span>
+          <h2 id="match-heading" class="text-3xl sm:text-4xl font-bold text-indeed-ink">
+            Match candidates by job
+          </h2>
+          <p class="mt-4 text-slate-600">
+            Search for candidates and get instant matches based on skills and experience.
+          </p>
+        </div>
+
+        <div class="max-w-2xl mx-auto">
+          <!-- Search demo card -->
+          <div class="bg-indeed-light rounded-2xl border border-slate-200 p-6">
+
+            <div class="flex items-center gap-3 mb-6">
+              <div class="flex-1">
+                <label for="demoSearch" class="block text-sm font-semibold text-slate-700 mb-2">
+                  Search candidates
+                </label>
+                <input id="demoSearch" type="text" placeholder="e.g. React Developer, Node.js..."
+                  class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm
+                         focus:outline-none focus:ring-2 focus:ring-indeed-blue focus:border-transparent" />
+              </div>
+              <button type="button" disabled
+                class="px-6 py-3 bg-indeed-blue text-white font-semibold rounded-xl text-sm opacity-60 cursor-not-allowed">
+                Search
+              </button>
+            </div>
+
+            <p class="text-sm text-slate-500 mb-4">
+              <span class="font-bold text-indeed-blue">116</span> resumes match your criteria
+            </p>
+
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-12 h-12 rounded-full bg-indeed-blue/10 flex items-center justify-center text-lg font-bold text-indeed-blue flex-shrink-0">
+                    AN
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-slate-800">Aisha Negi</h3>
+                    <p class="text-sm text-slate-500">Pune, MH · 3 years experience</p>
+                    <p class="text-sm text-slate-600 mt-2">
+                      <span class="font-medium">Skills:</span> React, TypeScript, Node.js, PostgreSQL
+                    </p>
+                  </div>
+                </div>
+                <button type="button"
+                  class="px-4 py-2 bg-indeed-blue text-white text-xs font-semibold rounded-lg
+                         hover:bg-indeed-hover transition flex-shrink-0">
+                  Message
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FAQ SECTION (Indeed style accordion) ===== -->
+    <section class="bg-indeed-light py-16 sm:py-20" aria-labelledby="faq-heading">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <h2 id="faq-heading" class="text-3xl sm:text-4xl font-bold text-indeed-ink text-center mb-12">
+          Frequently Asked Questions
+        </h2>
+
+        <div class="space-y-3">
+          <!-- FAQ item -->
+          <details class="group bg-white rounded-xl border border-slate-200 open:shadow-sm">
+            <summary class="flex items-center justify-between p-5 cursor-pointer list-none font-semibold text-slate-800
+                            hover:text-indeed-blue transition">
+              How do I post a job?
+              <span class="transition-transform group-open:rotate-180 text-slate-400">▼</span>
+            </summary>
+            <div class="px-5 pb-5 text-sm text-slate-600 leading-relaxed">
+              Click 'Post a Job' to get started. Creating an account is free and gives you access
+              to the Employer Dashboard to manage your recruitment.
+            </div>
+          </details>
+
+          <details class="group bg-white rounded-xl border border-slate-200 open:shadow-sm">
+            <summary class="flex items-center justify-between p-5 cursor-pointer list-none font-semibold text-slate-800
+                            hover:text-indeed-blue transition">
+              How long does it take to go live?
+              <span class="transition-transform group-open:rotate-180 text-slate-400">▼</span>
+            </summary>
+            <div class="px-5 pb-5 text-sm text-slate-600 leading-relaxed">
+              Most posts go live within 24 to 48 hours after a standard review. Sponsored Jobs
+              stay visible longer in search results and are featured in job alerts.
+            </div>
+          </details>
+
+          <details class="group bg-white rounded-xl border border-slate-200 open:shadow-sm">
+            <summary class="flex items-center justify-between p-5 cursor-pointer list-none font-semibold text-slate-800
+                            hover:text-indeed-blue transition">
+              Can I filter candidates by skills?
+              <span class="transition-transform group-open:rotate-180 text-slate-400">▼</span>
+            </summary>
+            <div class="px-5 pb-5 text-sm text-slate-600 leading-relaxed">
+              Yes! Use screener questions to filter for required skills. You can also use
+              DevHire Lite Smart Sourcing to search our CV database and invite qualified
+              candidates to apply.
+            </div>
+          </details>
+
+          <details class="group bg-white rounded-xl border border-slate-200 open:shadow-sm">
+            <summary class="flex items-center justify-between p-5 cursor-pointer list-none font-semibold text-slate-800
+                            hover:text-indeed-blue transition">
+              Is there a free plan?
+              <span class="transition-transform group-open:rotate-180 text-slate-400">▼</span>
+            </summary>
+            <div class="px-5 pb-5 text-sm text-slate-600 leading-relaxed">
+              Yes. Creating an account and posting your first job is completely free.
+              Premium options like Sponsored Jobs are available when you need more reach.
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA SECTION (Indeed style) ===== -->
+    <section class="bg-indeed-blue py-16 sm:py-20">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white">
+          Ready to find your next great developer?
+        </h2>
+        <p class="mt-4 text-indigo-100 text-lg max-w-xl mx-auto">
+          Join thousands of companies already hiring on DevHire Lite.
         </p>
         <a href="register.html"
-           class="inline-block mt-8 px-8 py-3 bg-white text-indigo-700 font-semibold rounded-xl
+           class="inline-block mt-8 px-8 py-4 bg-white text-indeed-blue font-bold rounded-xl
                   hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-white
-                  focus:ring-offset-2 focus:ring-offset-indigo-600 transition">
-          Post a Job
+                  focus:ring-offset-2 focus:ring-offset-indeed-blue transition text-base">
+          Get Started for Free
         </a>
       </div>
     </section>
 
   </main>
 
-  <!-- FOOTER -->
-  <footer class="bg-slate-900 text-slate-300">
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="bg-indeed-ink text-slate-300">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12
                 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
       <div>
         <p class="font-bold text-white text-lg">🚀 DevHire Lite</p>
-        <p class="mt-3 text-sm text-slate-400">
-          Find developer jobs, faster.
+        <p class="mt-3 text-sm text-slate-400 leading-relaxed">
+          Find developer jobs, faster. Hire the best talent, faster.
         </p>
       </div>
       <div>
         <h3 class="font-semibold text-white mb-3">For Candidates</h3>
         <ul class="space-y-2 text-sm">
-          <li><a href="jobs.html" class="hover:text-white">Browse Jobs</a></li>
-          <li><a href="#" class="hover:text-white">Companies</a></li>
-          <li><a href="#" class="hover:text-white">Salary Guide</a></li>
+          <li><a href="jobs.html" class="hover:text-white transition">Browse Jobs</a></li>
+          <li><a href="#" class="hover:text-white transition">Companies</a></li>
+          <li><a href="#" class="hover:text-white transition">Salary Guide</a></li>
         </ul>
       </div>
       <div>
         <h3 class="font-semibold text-white mb-3">For Recruiters</h3>
         <ul class="space-y-2 text-sm">
-          <li><a href="#" class="hover:text-white">Post a Job</a></li>
-          <li><a href="#" class="hover:text-white">Pricing</a></li>
-          <li><a href="#" class="hover:text-white">Dashboard</a></li>
+          <li><a href="#" class="hover:text-white transition">Post a Job</a></li>
+          <li><a href="#" class="hover:text-white transition">Pricing</a></li>
+          <li><a href="dashboard.html" class="hover:text-white transition">Dashboard</a></li>
         </ul>
       </div>
       <div>
         <h3 class="font-semibold text-white mb-3">Company</h3>
         <ul class="space-y-2 text-sm">
-          <li><a href="#" class="hover:text-white">About</a></li>
-          <li><a href="#" class="hover:text-white">Privacy</a></li>
-          <li><a href="#" class="hover:text-white">Contact</a></li>
+          <li><a href="#" class="hover:text-white transition">About</a></li>
+          <li><a href="#" class="hover:text-white transition">Privacy</a></li>
+          <li><a href="#" class="hover:text-white transition">Contact</a></li>
         </ul>
       </div>
     </div>
