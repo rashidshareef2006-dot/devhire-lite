@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — DevHire Lite</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-indigo-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">
+    Skip to main content
+  </a>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+    <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16" aria-label="Main navigation">
+      <a href="index.html" class="flex items-center gap-2 font-bold text-lg text-indigo-600">
+        <span aria-hidden="true">🚀</span>
+        <span>DevHire<span class="text-slate-800">Lite</span></span>
+      </a>
+      <div class="flex items-center gap-4">
+        <span class="hidden sm:inline text-sm text-slate-600">Hi, <span class="font-semibold">Rashi</span> 👋</span>
+        <button id="logoutBtn" class="text-sm font-medium text-slate-700 hover:text-red-600">Logout</button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
+      <p class="text-slate-600 mt-1">Here's what's happening with your applications</p>
+    </div>
+
+    <!-- Role tabs -->
+    <div class="flex gap-2 mb-6 border-b border-slate-200">
+      <button class="tab-btn px-4 py-2 -mb-px text-sm font-medium border-b-2 border-indigo-600 text-indigo-600" data-tab="candidate">
+        Candidate View
+      </button>
+      <button class="tab-btn px-4 py-2 -mb-px text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900" data-tab="recruiter">
+        Recruiter View
+      </button>
+    </div>
+
+    <!-- CANDIDATE VIEW -->
+    <section id="tab-candidate" class="tab-content">
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <p class="text-sm text-slate-500">Applications</p>
+          <p class="text-2xl font-bold text-slate-900 mt-1">12</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <p class="text-sm text-slate-500">Shortlisted</p>
+          <p class="text-2xl font-bold text-green-600 mt-1">3</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <p class="text-sm text-slate-500">In Review</p>
+          <p class="text-2xl font-bold text-amber-600 mt-1">5</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <p class="text-sm text-slate-500">Rejected</p>
+          <p class="text-2xl font-bold text-slate-400 mt-1">4</p>
+        </div>
+      </div>
+
+      <!-- Applications table -->
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200">
+          <h2 class="font-semibold text-slate-900">Recent Applications</h2>
+        </div>
+        <table class="w-full text-sm responsive-table">
+          <thead class="bg-slate-50 text-left text-slate-600">
+            <tr>
+              <th class="px-6 py-3 font-medium">Job</th>
+              <th class="px-6 py-3 font-medium">Company</th>
+              <th class="px-6 py-3 font-medium">Applied</th>
+              <th class="px-6 py-3 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr>
+              <td class="px-6 py-4" data-label="Job">Frontend Developer</td>
+              <td class="px-6 py-4 text-slate-600" data-label="Company">TechNova</td>
+              <td class="px-6 py-4 text-slate-600" data-label="Applied">2 days ago</td>
+              <td class="px-6 py-4" data-label="Status"><span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium">Shortlisted</span></td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4" data-label="Job">Backend Engineer</td>
+              <td class="px-6 py-4 text-slate-600" data-label="Company">DataFlow</td>
+              <td class="px-6 py-4 text-slate-600" data-label="Applied">5 days ago</td>
+              <td class="px-6 py-4" data-label="Status"><span class="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-700 font-medium">In Review</span></td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4" data-label="Job">UI Engineer</td>
+              <td class="px-6 py-4 text-slate-600" data-label="Company">PixelCraft</td>
+              <td class="px-6 py-4 text-slate-600" data-label="Applied">1 week ago</td>
+              <td class="px-6 py-4" data-label="Status"><span class="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-600 font-medium">Rejected</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- RECRUITER VIEW -->
+    <section id="tab-recruiter" class="tab-content hidden">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <p class="text-sm text-slate-500">Posted Jobs</p>
+          <p class="text-2xl font-bold text-slate-900 mt-1">4</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <p class="text-sm text-slate-500">Applications</p>
+          <p class="text-2xl font-bold text-indigo-600 mt-1">38</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <p class="text-sm text-slate-500">Shortlisted</p>
+          <p class="text-2xl font-bold text-green-600 mt-1">7</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <p class="text-sm text-slate-500">Closed</p>
+          <p class="text-2xl font-bold text-slate-400 mt-1">1</p>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="font-semibold text-slate-900 text-lg">Your Job Posts</h2>
+        <button class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700">
+          + Post New Job
+        </button>
+      </div>
+
+      <div class="grid gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 flex justify-between items-start gap-4">
+          <div>
+            <h3 class="font-semibold text-slate-900">Frontend Developer</h3>
+            <p class="text-sm text-slate-600 mt-1">Posted 2 days ago · 14 applications</p>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <button class="px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg hover:bg-slate-50">Edit</button>
+            <button class="px-3 py-1.5 text-xs font-semibold border border-red-200 text-red-600 rounded-lg hover:bg-red-50">Close</button>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 flex justify-between items-start gap-4">
+          <div>
+            <h3 class="font-semibold text-slate-900">Backend Engineer</h3>
+            <p class="text-sm text-slate-600 mt-1">Posted 5 days ago · 24 applications</p>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <button class="px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-lg hover:bg-slate-50">Edit</button>
+            <button class="px-3 py-1.5 text-xs font-semibold border border-red-200 text-red-600 rounded-lg hover:bg-red-50">Close</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/main.js"></script>
+  <script>
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('border-indigo-600', 'text-indigo-600');
+          b.classList.add('border-transparent', 'text-slate-600');
+        });
+        btn.classList.remove('border-transparent', 'text-slate-600');
+        btn.classList.add('border-indigo-600', 'text-indigo-600');
+
+        document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
+      });
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      showToast('Logged out', 'success');
+      setTimeout(() => (window.location.href = 'index.html'), 800);
+    });
+  </script>
+</body>
+</html>
