@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
@@ -6,24 +6,91 @@ import { Modal } from '@/components/common/Modal';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useSavedJobsStore } from '@/store/useSavedJobsStore';
-import { mockJobs } from '@/data/mockJobs';
+import { jobsService } from '@/services/jobs.service';
+import type { Job } from '@/types';
+
+const JOB_TYPE_LABEL: Record<Job['type'], string> = {
+  FULL_TIME: 'Full-time',
+  PART_TIME: 'Part-time',
+  CONTRACT: 'Contract',
+  INTERNSHIP: 'Internship',
+};
+
+function formatSalary(job: Job): string {
+  if (!job.salaryMin && !job.salaryMax) return 'Salary not disclosed';
+  const fmt = (n: number) => `₹${(n / 100000).toFixed(1)}L`;
+  if (job.salaryMin && job.salaryMax) return `${fmt(job.salaryMin)} – ${fmt(job.salaryMax)}`;
+  if (job.salaryMin) return `From ${fmt(job.salaryMin)}`;
+  return `Up to ${fmt(job.salaryMax!)}`;
+}
+
+function formatRelative(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return 'today';
+  if (days === 1) return '1 day ago';
+  if (days < 7) return `${days} days ago`;
+  const weeks = Math.floor(days / 7);
+  return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+}
 
 export function JobDetail() {
   const { id } = useParams<{ id: string }>();
-  const job = mockJobs.find((j) => j.id === id);
 
+  const [job, setJob] = useState<Job | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  const [coverLetter, setCoverLetter] = useState('');
 
   const { toast } = useToast();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { toggle, isSaved } = useSavedJobsStore();
 
-  if (!job) {
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    jobsService
+      .get(id)
+      .then((data) => {
+        if (!cancelled) setJob(data);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(
+            err?.response?.data?.error?.message || err?.message || 'Failed to load job',
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
+        <div className="animate-pulse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 h-64" />
+        <div className="animate-pulse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 h-48" />
+      </div>
+    );
+  }
+
+  if (error || !job) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
         <p className="text-5xl mb-4">😕</p>
-        <h1 className="text-2xl font-bold text-indeed-ink dark:text-white">Job not found</h1>
+        <h1 className="text-2xl font-bold text-indeed-ink dark:text-white">
+          {error || 'Job not found'}
+        </h1>
         <Link to="/jobs" className="inline-block mt-6 btn-primary">
           Back to Jobs
         </Link>
@@ -33,9 +100,18 @@ export function JobDetail() {
 
   const saved = isSaved(job.id);
 
+  const handleSaveToggle = () => {
+    toggle(job.id);
+    toast(saved ? 'Removed from saved' : '❤️ Job saved!', 'success');
+  };
+
   const handleApplyClick = () => {
     if (!isAuthenticated) {
       toast('Please login first', 'error');
+      return;
+    }
+    if (user?.role !== 'CANDIDATE') {
+      toast('Only candidates can apply to jobs', 'error');
       return;
     }
     setIsModalOpen(true);
@@ -43,10 +119,20 @@ export function JobDetail() {
 
   const handleConfirmApply = async () => {
     setIsApplying(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setIsApplying(false);
-    setIsModalOpen(false);
-    toast('✅ Application submitted successfully!', 'success');
+    try {
+      await jobsService.apply(job.id, coverLetter || undefined);
+      toast('✅ Application submitted successfully!', 'success');
+      setIsModalOpen(false);
+      setCoverLetter('');
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        'Failed to apply. Try again.';
+      toast(msg, 'error');
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   return (
@@ -62,46 +148,42 @@ export function JobDetail() {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex-1">
-            <div className="flex items-start justify-between gap-3">
-              <h1 className="text-2xl sm:text-3xl font-bold text-indeed-ink dark:text-white">
-                {job.title}
-              </h1>
-              <button
-                onClick={() => {
-                  toggle(job.id);
-                  toast(saved ? 'Removed from saved' : '❤️ Job saved!', 'success');
-                }}
-                aria-label={saved ? 'Remove from saved' : 'Save job'}
-                aria-pressed={saved}
-                className="text-2xl transition hover:scale-110 active:scale-95"
-                type="button"
-              >
-                {saved ? '❤️' : '🤍'}
-              </button>
-            </div>
-
-            <p className="text-slate-600 dark:text-slate-400 mt-2">{job.company}</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-indeed-ink dark:text-white">
+              {job.title}
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-2">
+              {job.company} · 📍 {job.location}
+            </p>
 
             <div className="flex flex-wrap gap-3 mt-4 text-sm text-slate-600 dark:text-slate-400">
-              <Badge variant="info">{job.type}</Badge>
-              <span>📍 {job.location}</span>
-              <span>💰 {job.salary}</span>
-              <span>🕒 {job.posted}</span>
+              <Badge variant="info">{JOB_TYPE_LABEL[job.type]}</Badge>
+              <Badge>{job.category}</Badge>
+              <span>💰 {formatSalary(job)}</span>
+              <span>🕒 {formatRelative(job.createdAt)}</span>
             </div>
           </div>
 
-          <Button onClick={handleApplyClick} className="w-full sm:w-auto">
-            Apply Now
-          </Button>
+          {/* Apply + Save buttons side-by-side */}
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
+            <Button onClick={handleApplyClick} className="flex-1 sm:flex-none">
+              Apply Now
+            </Button>
+            <button
+              onClick={handleSaveToggle}
+              type="button"
+              aria-label={saved ? 'Remove from saved' : 'Save job'}
+              aria-pressed={saved}
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm border-2 transition-all ${
+                saved
+                  ? 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'
+                  : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indeed-blue hover:text-indeed-blue dark:hover:border-indigo-400 dark:hover:text-indigo-400'
+              }`}
+            >
+              <span className="text-base">{saved ? '❤️' : '🤍'}</span>
+              {saved ? 'Saved' : 'Save Job'}
+            </button>
+          </div>
         </div>
-
-        <ul className="flex flex-wrap gap-2 mt-6">
-          {job.tags.map((t) => (
-            <li key={t}>
-              <Badge>{t}</Badge>
-            </li>
-          ))}
-        </ul>
       </div>
 
       {/* Description */}
@@ -109,49 +191,68 @@ export function JobDetail() {
         <h2 className="text-xl font-semibold text-indeed-ink dark:text-white mb-4">
           Job Description
         </h2>
-        <div className="space-y-4 text-slate-700 dark:text-slate-300 leading-relaxed">
-          {job.description.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-        </div>
+        <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+          {job.description}
+        </p>
       </section>
 
       {/* Requirements */}
       <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 mt-6 transition-colors">
-        <h2 className="text-xl font-semibold text-indeed-ink dark:text-white mb-4">Requirements</h2>
-        <ul className="space-y-2 text-slate-700 dark:text-slate-300 list-disc pl-5">
-          {job.requirements.map((r, i) => (
-            <li key={i}>{r}</li>
-          ))}
-        </ul>
+        <h2 className="text-xl font-semibold text-indeed-ink dark:text-white mb-4">
+          Requirements
+        </h2>
+        <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+          {job.requirements}
+        </p>
       </section>
 
-      {/* CTA */}
+      {/* Bottom CTA */}
       <div className="bg-indeed-blue rounded-2xl p-6 sm:p-8 mt-6 text-white text-center">
         <h2 className="text-xl font-bold">Interested in this role?</h2>
         <p className="text-indigo-100 mt-2 text-sm">
           Apply now and get a response within 3 days.
         </p>
-        <button
-          onClick={handleApplyClick}
-          className="mt-5 px-6 py-3 bg-white text-indeed-blue font-semibold rounded-xl hover:bg-indigo-50 transition"
-        >
-          Apply Now
-        </button>
+        <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={handleApplyClick}
+            className="px-6 py-3 bg-white text-indeed-blue font-semibold rounded-xl hover:bg-indigo-50 transition"
+          >
+            Apply Now
+          </button>
+          <button
+            onClick={handleSaveToggle}
+            className="px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold rounded-xl hover:bg-white/20 transition inline-flex items-center justify-center gap-2"
+          >
+            <span>{saved ? '❤️' : '🤍'}</span>
+            {saved ? 'Saved' : 'Save Job'}
+          </button>
+        </div>
       </div>
 
       {/* Apply Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Confirm your application"
+        title="Apply for this job"
       >
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-          Are you sure you want to apply for <strong className="text-slate-900 dark:text-white">{job.title}</strong>{' '}
-          at <strong className="text-slate-900 dark:text-white">{job.company}</strong>?
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          Applying for{' '}
+          <strong className="text-slate-900 dark:text-white">{job.title}</strong> at{' '}
+          <strong className="text-slate-900 dark:text-white">{job.company}</strong>
         </p>
 
-        <div className="flex gap-3">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          Cover letter (optional)
+        </label>
+        <textarea
+          value={coverLetter}
+          onChange={(e) => setCoverLetter(e.target.value)}
+          rows={4}
+          placeholder="Tell the recruiter why you're a great fit..."
+          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indeed-blue resize-none"
+        />
+
+        <div className="flex gap-3 mt-6">
           <Button
             variant="outline"
             onClick={() => setIsModalOpen(false)}
@@ -161,7 +262,7 @@ export function JobDetail() {
             Cancel
           </Button>
           <Button onClick={handleConfirmApply} isLoading={isApplying} className="flex-1">
-            Confirm Apply
+            Submit Application
           </Button>
         </div>
       </Modal>

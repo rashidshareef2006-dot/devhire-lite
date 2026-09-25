@@ -4,53 +4,69 @@ import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useToast } from '@/contexts/ToastContext';
+import { authService } from '@/services/auth.service';
+import { AxiosError } from 'axios';
 
-const schema = z
-  .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Enter a valid email'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
-    role: z.enum(['candidate', 'recruiter']),
-    terms: z.boolean().refine((v) => v === true, 'You must accept the terms'),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+const schema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().min(1, 'Email is required').email('Enter a valid email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  role: z.enum(['CANDIDATE', 'RECRUITER']),
+});
 
 type FormData = z.infer<typeof schema>;
 
 export function Register() {
   const navigate = useNavigate();
+  const { login } = useAuthStore();
+  const { toast } = useToast();
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { role: 'candidate', terms: false },
+    defaultValues: { role: 'CANDIDATE' },
   });
 
-  const onSubmit = async (_data: FormData) => {
-    await new Promise((r) => setTimeout(r, 800));
-    alert('✅ Account created! Redirecting to login...');
-    navigate('/login');
+  const onSubmit = async (data: FormData) => {
+    try {
+      const res = await authService.register(data);
+      login(res.user, res.accessToken, res.refreshToken);
+      toast(`Account created! Welcome, ${res.user.name} 🎉`, 'success');
+      navigate('/', { replace: true });
+    } catch (err) {
+      const axErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const msg =
+        axErr.response?.data?.error?.message ||
+        axErr.response?.data?.message ||
+        'Registration failed. Please try again.';
+      toast(msg, 'error');
+    }
   };
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center py-12 px-4">
+    <div className="min-h-[70vh] flex items-center justify-center py-12 px-4 bg-slate-50 dark:bg-slate-950 transition-colors">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-8">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-indeed-ink">Create account 🎉</h1>
-            <p className="text-slate-600 mt-2 text-sm">Join DevHire Lite in under a minute</p>
+            <h1 className="text-2xl font-bold text-indeed-ink dark:text-white">
+              Create your account ✨
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-2 text-sm">
+              Join DevHire Lite in 30 seconds
+            </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <Input
-              label="Full Name"
+              label="Full name"
+              type="text"
               placeholder="Rashi Sharma"
+              autoComplete="name"
               required
               error={errors.name?.message}
               {...register('name')}
@@ -60,6 +76,7 @@ export function Register() {
               label="Email"
               type="email"
               placeholder="you@example.com"
+              autoComplete="email"
               required
               error={errors.email?.message}
               {...register('email')}
@@ -68,49 +85,41 @@ export function Register() {
             <Input
               label="Password"
               type="password"
-              placeholder="Min 6 characters"
+              placeholder="••••••••"
+              autoComplete="new-password"
               required
               error={errors.password?.message}
               {...register('password')}
             />
 
-            <Input
-              label="Confirm Password"
-              type="password"
-              placeholder="Re-enter password"
-              required
-              error={errors.confirmPassword?.message}
-              {...register('confirmPassword')}
-            />
-
-            <fieldset>
-              <legend className="block text-sm font-medium text-slate-700 mb-2">I am a</legend>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                I am a…
+              </label>
               <div className="grid grid-cols-2 gap-3">
-                <label className="cursor-pointer">
-                  <input type="radio" value="candidate" className="peer sr-only" {...register('role')} />
-                  <div className="p-3 text-center text-sm font-medium rounded-xl border border-slate-200 peer-checked:border-indeed-blue peer-checked:bg-indeed-blue/5 peer-checked:text-indeed-blue hover:bg-slate-50 transition">
-                    👨‍💻 Candidate
-                  </div>
+                <label className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer hover:border-indeed-blue transition-colors has-[:checked]:border-indeed-blue has-[:checked]:bg-indigo-50 dark:has-[:checked]:bg-indigo-950/30">
+                  <input
+                    type="radio"
+                    value="CANDIDATE"
+                    className="text-indeed-blue focus:ring-indeed-blue"
+                    {...register('role')}
+                  />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    👤 Candidate
+                  </span>
                 </label>
-                <label className="cursor-pointer">
-                  <input type="radio" value="recruiter" className="peer sr-only" {...register('role')} />
-                  <div className="p-3 text-center text-sm font-medium rounded-xl border border-slate-200 peer-checked:border-indeed-blue peer-checked:bg-indeed-blue/5 peer-checked:text-indeed-blue hover:bg-slate-50 transition">
-                    🏢 Recruiter
-                  </div>
+                <label className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer hover:border-indeed-blue transition-colors has-[:checked]:border-indeed-blue has-[:checked]:bg-indigo-50 dark:has-[:checked]:bg-indigo-950/30">
+                  <input
+                    type="radio"
+                    value="RECRUITER"
+                    className="text-indeed-blue focus:ring-indeed-blue"
+                    {...register('role')}
+                  />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    💼 Recruiter
+                  </span>
                 </label>
               </div>
-            </fieldset>
-
-            <div>
-              <label className="flex items-start gap-2 text-sm text-slate-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 rounded text-indeed-blue focus:ring-indeed-blue"
-                  {...register('terms')}
-                />
-                <span>I agree to the Terms and Privacy Policy</span>
-              </label>
-              {errors.terms && <p className="text-sm text-red-600 mt-1">{errors.terms.message}</p>}
             </div>
 
             <Button type="submit" isLoading={isSubmitting} className="w-full">
@@ -118,10 +127,13 @@ export function Register() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-slate-600 mt-6">
+          <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-6">
             Already have an account?{' '}
-            <Link to="/login" className="text-indeed-blue font-semibold hover:underline">
-              Login
+            <Link
+              to="/login"
+              className="text-indeed-blue dark:text-indigo-400 font-semibold hover:underline"
+            >
+              Sign in
             </Link>
           </p>
         </div>

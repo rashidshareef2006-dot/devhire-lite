@@ -40,7 +40,12 @@ export function Footer() {
       </div>
 
       <div className="border-t border-slate-800 py-6 text-center text-sm text-slate-500">
-        © 2025 DevHire Lite. Built with ❤️
+        <Link
+  to="/admin/login"
+  className="hover:text-indeed-blue dark:hover:text-indigo-400 transition-colors cursor-pointer"
+>
+  © 2025 DevHire Lite. Built with ❤️
+</Link>
       </div>
     </footer>
   );

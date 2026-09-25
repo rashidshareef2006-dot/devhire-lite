@@ -4,9 +4,10 @@ import type { User } from '@/types';
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: User, accessToken: string, refreshToken: string) => void;
   logout: () => void;
   updateUser: (patch: Partial<User>) => void;
 }
@@ -15,20 +16,21 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
+      accessToken: null,
+      refreshToken: null,
       isAuthenticated: false,
 
-      login: (user, token) => set({ user, token, isAuthenticated: true }),
+      login: (user, accessToken, refreshToken) =>
+        set({ user, accessToken, refreshToken, isAuthenticated: true }),
 
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      logout: () =>
+        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false }),
 
       updateUser: (patch) =>
         set((state) => ({
           user: state.user ? { ...state.user, ...patch } : null,
         })),
     }),
-    {
-      name: 'devhire-auth',
-    },
+    { name: 'devhire-auth' },
   ),
 );

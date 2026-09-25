@@ -6,6 +6,8 @@ import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/contexts/ToastContext';
+import { authService } from '@/services/auth.service';
+import { AxiosError } from 'axios';
 
 const schema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email'),
@@ -21,7 +23,9 @@ export function Login() {
   const { login } = useAuthStore();
   const { toast } = useToast();
 
-  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname || '/dashboard';
+  const from =
+    (location.state as { from?: { pathname: string } } | null)?.from?.pathname ||
+    '/';
 
   const {
     register,
@@ -33,25 +37,23 @@ export function Login() {
   });
 
   const onSubmit = async (data: FormData) => {
-    // TODO: Phase 4 — real API call
-    await new Promise((r) => setTimeout(r, 800));
-
-    // Demo: extract name from email
-    const name = data.email.split('@')[0];
-    const displayName = name.charAt(0).toUpperCase() + name.slice(1);
-
-    login(
-      {
-        id: '1',
-        name: displayName,
+    try {
+      const res = await authService.login({
         email: data.email,
-        role: 'candidate', // demo — backend se aayega
-      },
-      'demo-jwt-token',
-    );
+        password: data.password,
+      });
 
-    toast(`Welcome back, ${displayName}! 🎉`, 'success');
-    navigate(from, { replace: true });
+      login(res.user, res.accessToken, res.refreshToken);
+      toast(`Welcome back, ${res.user.name}! 🎉`, 'success');
+      navigate(from, { replace: true });
+    } catch (err) {
+      const axErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const msg =
+        axErr.response?.data?.error?.message ||
+        axErr.response?.data?.message ||
+        'Login failed. Please try again.';
+      toast(msg, 'error');
+    }
   };
 
   return (
@@ -121,7 +123,7 @@ export function Login() {
           </p>
 
           <div className="mt-6 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 text-xs text-center text-indigo-700 dark:text-indigo-300">
-            💡 Demo: koi bhi valid email + 6+ char password
+            🔑 Test: <b>rashi@test.com</b> / <b>password123</b>
           </div>
         </div>
       </div>

@@ -1,13 +1,76 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* ═══════════════ THEME TOKENS ═══════════════ */
 @theme {
-  --color-indeed-blue: #003A9B;
-  --color-indeed-ink: #00123C;
-  --color-indeed-light: #F3F2F1;
-  --color-indeed-hover: #2557A7;
+  /* Brand colors */
+  --color-indeed-blue: #003a9b;
+  --color-indeed-ink: #00123c;
+  --color-indeed-light: #f3f2f1;
+  --color-indeed-hover: #2557a7;
+
+  /* Fonts */
   --font-sans: 'Noto Sans', system-ui, sans-serif;
+
+  /* Custom animations */
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-gradient-shift: gradient-shift 8s ease infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-fade-up: fade-up 0.5s ease-out both;
+  --animate-slide-in: slide-in 0.4s ease-out both;
+  --animate-pulse-slow: pulse-slow 3s ease-in-out infinite;
+
+  /* Custom background images (usable as bg-mesh-gradient etc.) */
+  --background-image-mesh-gradient:
+    radial-gradient(at 20% 20%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(147, 51, 234, 0.12) 0px, transparent 50%),
+    radial-gradient(at 0% 80%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
+
+  --background-image-shimmer:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+
+  --background-image-grid-pattern:
+    linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
 }
 
+/* ═══════════════ KEYFRAMES ═══════════════ */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in {
+  0% { opacity: 0; transform: translateX(-20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ═══════════════ BASE ═══════════════ */
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -17,46 +80,151 @@
     @apply bg-white text-slate-800 antialiased font-sans;
   }
 
+  h1, h2, h3 {
+    letter-spacing: -0.02em;
+  }
+
   *:focus-visible {
-    outline: 2px solid #003A9B;
+    outline: 2px solid #003a9b;
     outline-offset: 2px;
     border-radius: 6px;
   }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-100 dark:bg-slate-900;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400 dark:bg-slate-600;
+  }
 }
 
+/* ═══════════════ COMPONENTS ═══════════════ */
 @layer components {
+  /* ── Inputs ── */
   .input-field {
     @apply w-full px-4 py-3 border border-slate-200 rounded-xl text-[0.95rem]
            focus:outline-none focus:border-indeed-blue
-           focus:ring-4 focus:ring-indeed-blue/15 transition;
+           focus:ring-4 focus:ring-indeed-blue/15 transition
+           dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200;
   }
 
+  /* ── Buttons ── */
   .btn-primary {
     @apply inline-block px-6 py-3 bg-indeed-blue text-white font-semibold rounded-xl
            hover:bg-indeed-hover focus:outline-none focus:ring-2 focus:ring-indeed-blue
-           focus:ring-offset-2 transition;
+           focus:ring-offset-2 transition relative overflow-hidden;
   }
 
   .btn-outline {
     @apply inline-block px-6 py-3 border-2 border-indeed-blue text-indeed-blue font-semibold rounded-xl
            hover:bg-indeed-blue hover:text-white transition;
   }
+
+  .btn-gradient {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl
+           bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold
+           hover:shadow-lg hover:shadow-blue-500/25
+           transition-all duration-300 relative overflow-hidden;
+  }
+
+  /* ── Glass card ── */
+  .glass-card {
+    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md
+           border border-white/40 dark:border-slate-700/50;
+  }
+
+  .glass-nav {
+    @apply bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl
+           border-b border-white/40 dark:border-slate-800/50;
+  }
+
+  /* ── Gradient text ── */
+  .text-gradient {
+    @apply bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
+           bg-clip-text text-transparent;
+  }
+
+  /* ── Shimmer effect on hover (buttons) ── */
+  .btn-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.35),
+      transparent
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+    pointer-events: none;
+  }
+  .btn-shimmer:hover::after {
+    transform: translateX(100%);
+  }
+
+  /* ── Card with hover lift ── */
+  .card-hover {
+    @apply transition-all duration-300
+           hover:-translate-y-1
+           hover:shadow-2xl hover:shadow-blue-500/10;
+  }
+
+  /* ── Skeleton loader ── */
+  .skeleton {
+    @apply rounded-3xl
+           bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100
+           dark:from-slate-800 dark:via-slate-700 dark:to-slate-800
+           bg-[length:1000px_100%] animate-shimmer;
+  }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+/* ═══════════════ UTILITIES ═══════════════ */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out both;
+  }
+  .animate-fade-up {
+    animation: fade-up 0.4s ease-out both;
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-slide-in {
+    animation: slide-in 0.4s ease-out both;
+  }
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+  /* Text balance for headings */
+  .text-balance {
+    text-wrap: balance;
+  }
 
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out both;
-}
-
-.animate-fade-up {
-  animation: fadeUp 0.4s ease-out both;
+  /* Line clamp helpers */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
