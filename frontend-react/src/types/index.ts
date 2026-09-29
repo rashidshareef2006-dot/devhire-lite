@@ -1,21 +1,39 @@
-// ─── User ───
+// ═══════════════════════════════════════════════════════════
+//  DevHire Lite — Shared TypeScript Types
+// ═══════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────
+//  USER
+// ─────────────────────────────────────────────
 export type UserRole = 'CANDIDATE' | 'RECRUITER' | 'ADMIN';
 
 export interface User {
   id: string;
-  name: string;
   email: string;
+  name: string;
   role: UserRole;
   avatar?: string | null;
   bio?: string | null;
   location?: string | null;
   company?: string | null;
+  phone?: string | null;
+  headline?: string | null;
+  skills?: string[];
+  website?: string | null;
+  linkedin?: string | null;
+  github?: string | null;
+  resumeUrl?: string | null;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
+  lastLoginAt?: string | null;
 }
 
-// ─── Job (matches backend Prisma model exactly) ───
+// ─────────────────────────────────────────────
+//  JOB
+// ─────────────────────────────────────────────
 export type JobType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP';
+export type WorkMode = 'ONSITE' | 'REMOTE' | 'HYBRID';
+export type SalaryPeriod = 'YEARLY' | 'MONTHLY' | 'HOURLY';
 
 export interface Job {
   id: string;
@@ -24,8 +42,8 @@ export interface Job {
   location: string;
   type: JobType;
   category: string;
-  salaryMin: number | null;
-  salaryMax: number | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
   currency: string;
   description: string;
   requirements: string;
@@ -33,16 +51,17 @@ export interface Job {
   createdAt: string;
   updatedAt: string;
   postedById: string;
-  postedBy?: {
-    id: string;
-    name: string;
-    email?: string;
-    company?: string | null;
-  };
+
+  // Optional relation (joins)
+  postedBy?: Pick<User, 'id' | 'name' | 'email' | 'avatar'>;
+
+  // Optional meta (backend may add)
   _count?: { applications: number };
 }
 
-// ─── Application ───
+// ─────────────────────────────────────────────
+//  APPLICATION
+// ─────────────────────────────────────────────
 export type ApplicationStatus =
   | 'APPLIED'
   | 'IN_REVIEW'
@@ -52,43 +71,115 @@ export type ApplicationStatus =
 
 export interface Application {
   id: string;
-  jobId: string;
-  candidateId: string;
   status: ApplicationStatus;
   coverLetter?: string | null;
   resumeUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  jobId: string;
+  candidateId: string;
+
+  // Relations
+  candidate?: Pick<User, 'id' | 'name' | 'email' | 'avatar' | 'headline'>;
   job?: Job;
-  candidate?: User;
+}
+
+// ─────────────────────────────────────────────
+//  SAVED JOB
+// ─────────────────────────────────────────────
+export interface SavedJob {
+  id: string;
+  createdAt: string;
+  userId: string;
+  jobId: string;
+  job?: Job;
+}
+
+// ─────────────────────────────────────────────
+//  MESSAGE / CHAT
+// ─────────────────────────────────────────────
+export interface Message {
+  id: string;
+  content: string;
+  read: boolean;
+  createdAt: string;
+  senderId: string;
+  receiverId: string;
+
+  // Optional joins
+  sender?: Pick<User, 'id' | 'name' | 'avatar'>;
+  receiver?: Pick<User, 'id' | 'name' | 'avatar'>;
+}
+
+export interface ChatUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  avatar?: string | null;
+  headline?: string | null;
+  online?: boolean;
+}
+
+export interface Conversation {
+  user: ChatUser;
+  lastMessage: string;      // 👈 Message → string
+  unreadCount: number;
+  online?: boolean;         // 👈 YE ADD KARO
+}
+
+// ─────────────────────────────────────────────
+//  ABOUT / PORTFOLIO
+// ─────────────────────────────────────────────
+export interface SocialLink {
+  label: string;      // "GitHub", "LinkedIn", "Portfolio"
+  url: string;
+  icon?: string;
+}
+
+export interface AboutProject {
+  title: string;
+  description: string;
+  techStack?: string[];
+  liveUrl?: string;
+  repoUrl?: string;
+}
+
+export interface AboutProfile {
+  id: string;
+  name: string;
+  title: string;
+  photoUrl?: string | null;
+  location: string;
+  email: string;
+  bio: string;
+  skills: string[];
+  projects: AboutProject[];
+  socialLinks: SocialLink[];
+  education: string;
+  educationUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-// ─── SavedJob ───
-export interface SavedJob {
-  id: string;
-  userId: string;
-  jobId: string;
-  job?: Job;
-  createdAt: string;
-}
-// ─── Message ───
-export interface Message {
-  id: string;
-  content: string;
-  senderId: string;
-  receiverId: string;
-  read: boolean;
-  createdAt: string;
-  sender?: Pick<User, 'id' | 'name' | 'email'>;
-  receiver?: Pick<User, 'id' | 'name' | 'email'>;
+// ─────────────────────────────────────────────
+//  ADMIN STATS
+// ─────────────────────────────────────────────
+export interface AdminStats {
+  totalUsers: number;
+  totalJobs: number;
+  totalApplications: number;
+  usersByRole: Record<UserRole, number>;
 }
 
-export interface Conversation {
-  user: Pick<User, 'id' | 'name' | 'email' | 'role'>;
-  lastMessage: string;
-  lastMessageAt: string;
-  unreadCount: number;
-  online: boolean;
+// ─────────────────────────────────────────────
+//  API RESPONSE WRAPPER (agar backend wrap karta hai)
+// ─────────────────────────────────────────────
+export interface ApiError {
+  success: false;
+  error: {
+    message: string;
+    code: string;
+    details?: Record<string, string[]>;
+  };
 }
-
-export type ChatUser = Pick<User, 'id' | 'name' | 'email' | 'role'>;

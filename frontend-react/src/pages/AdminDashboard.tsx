@@ -14,7 +14,9 @@ import {
   Mail,
   Clock,
   MapPin,
+  UserCircle,
 } from 'lucide-react';
+import { AdminAboutEditor } from '@/components/admin/AdminAboutEditor';
 import { useAdminStore } from '@/store/useAdminStore';
 import {
   adminService,
@@ -24,7 +26,7 @@ import {
   type AdminApplication,
 } from '@/services/admin.service';
 
-type Tab = 'overview' | 'users' | 'jobs' | 'applications';
+type Tab = 'overview' | 'users' | 'jobs' | 'applications' | 'about';
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -89,6 +91,7 @@ export function AdminDashboard() {
     { id: 'users', label: 'Users', icon: Users },
     { id: 'jobs', label: 'Jobs', icon: Briefcase },
     { id: 'applications', label: 'Applications', icon: FileText },
+    { id: 'about', label: 'About', icon: UserCircle },
   ];
 
   const formatDate = (iso: string | null) => {
@@ -388,6 +391,13 @@ export function AdminDashboard() {
                 )}
               </motion.div>
             )}
+
+            {/* ═══ ABOUT ═══ */}
+            {tab === 'about' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <AdminAboutEditor />
+              </motion.div>
+            )}
           </>
         )}
       </div>
@@ -430,7 +440,7 @@ export function AdminDashboard() {
   );
 }
 
-// ─── Sub components ───
+// ═══ Sub components ═══
 
 function StatCard({
   icon: Icon,

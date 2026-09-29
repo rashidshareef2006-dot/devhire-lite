@@ -8,6 +8,129 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
+model User {
+  id               String        @id @default(cuid())
+  email            String        @unique
+  passwordHash     String
+  name             String
+  role             Role          @default(CANDIDATE)
+  avatar           String?
+  bio              String?
+  location         String?
+  company          String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  lastLoginAt      DateTime?
+  lastLoginIp      String?
+  applications     Application[] @relation("CandidateApplications")
+  jobs             Job[]         @relation("PostedJobs")
+  receivedMessages Message[]     @relation("ReceivedMessages")
+  sentMessages     Message[]     @relation("SentMessages")
+  savedJobs        SavedJob[]
+  phone      String?
+  headline   String?      // "Full Stack Developer @ XYZ"
+  skills     Json  @default("[]")
+  website    String?
+  linkedin   String?
+  github     String?
+  resumeUrl  String?
+  @@index([role])
+  @@map("users")
+}
+
+model Job {
+  id           String        @id @default(cuid())
+  title        String
+  company      String
+  location     String
+  type         JobType
+  category     String
+  salaryMin    Int?
+  salaryMax    Int?
+  currency     String        @default("INR")
+  description  String
+  requirements String
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  postedById   String
+  applications Application[]
+  postedBy     User          @relation("PostedJobs", fields: [postedById], references: [id], onDelete: Cascade)
+  savedBy      SavedJob[]
+
+  @@index([category])
+  @@index([location])
+  @@index([type])
+  @@index([postedById])
+  @@map("jobs")
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  status      ApplicationStatus @default(APPLIED)
+  coverLetter String?
+  resumeUrl   String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  jobId       String
+  candidateId String
+  candidate   User              @relation("CandidateApplications", fields: [candidateId], references: [id], onDelete: Cascade)
+  job         Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, candidateId])
+  @@index([candidateId])
+  @@index([status])
+  @@map("applications")
+}
+
+model SavedJob {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  userId    String
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@map("saved_jobs")
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  senderId   String
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model AboutProfile {
+  id           String   @id @default(cuid())
+  name         String
+  title        String
+  photoUrl     String?
+  location     String
+  email        String
+  bio          String   @db.Text
+  skills       String[]
+  projects     Json     @default("[]")
+  socialLinks  Json     @default("[]")   // 👈 YE ADD KARO
+  education    String
+  educationUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("about_profiles")
+}
+
 enum Role {
   CANDIDATE
   RECRUITER
@@ -27,111 +150,4 @@ enum ApplicationStatus {
   INTERVIEW
   OFFERED
   REJECTED
-}
-
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  role         Role     @default(CANDIDATE)
-  avatar       String?
-  bio          String?
-  location     String?
-  company      String?
-  lastLoginAt  DateTime?        // 👈 ADD
-  lastLoginIp  String?          // 👈 ADD
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  jobs         Job[]         @relation("PostedJobs")
-  applications Application[] @relation("CandidateApplications")
-  savedJobs    SavedJob[]
-  sentMessages     Message[] @relation("SentMessages")        
-  receivedMessages Message[] @relation("ReceivedMessages")  
-
-  @@index([role])
-  @@map("users")
-}
-
-model Job {
-  id           String   @id @default(cuid())
-  title        String
-  company      String
-  location     String
-  type         JobType
-  category     String
-  salaryMin    Int?
-  salaryMax    Int?
-  currency     String   @default("INR")
-  description  String
-  requirements String
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  postedById   String
-  postedBy     User   @relation("PostedJobs", fields: [postedById], references: [id], onDelete: Cascade)
-
-  applications Application[]
-  savedBy      SavedJob[]
-
-  @@index([category])
-  @@index([location])
-  @@index([type])
-  @@index([postedById])
-  @@map("jobs")
-}
-
-model Application {
-  id          String            @id @default(cuid())
-  status      ApplicationStatus @default(APPLIED)
-  coverLetter String?
-  resumeUrl   String?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-
-  jobId       String
-  job         Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
-
-  candidateId String
-  candidate   User   @relation("CandidateApplications", fields: [candidateId], references: [id], onDelete: Cascade)
-
-  @@unique([jobId, candidateId])
-  @@index([candidateId])
-  @@index([status])
-  @@map("applications")
-}
-
-model SavedJob {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  jobId  String
-  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, jobId])
-  @@index([userId])
-  @@map("saved_jobs")
-}
-
-model Message {
-  id          String   @id @default(cuid())
-  content     String
-  read        Boolean  @default(false)
-  createdAt   DateTime @default(now())
-
-  senderId    String
-  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-
-  receiverId  String
-  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
-
-  @@index([senderId])
-  @@index([receiverId])
-  @@index([createdAt])
-  @@map("messages")
 }

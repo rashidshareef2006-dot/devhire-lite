@@ -8,6 +8,8 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useSavedJobsStore } from '@/store/useSavedJobsStore';
 import { jobsService } from '@/services/jobs.service';
 import type { Job } from '@/types';
+import { Pencil } from 'lucide-react';
+import { EditJobModal } from '@/components/jobs/EditJobModal';
 
 const JOB_TYPE_LABEL: Record<Job['type'], string> = {
   FULL_TIME: 'Full-time',
@@ -43,6 +45,7 @@ export function JobDetail() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
+  const [editOpen, setEditOpen] = useState(false);
 
   const { toast } = useToast();
   const { isAuthenticated, user } = useAuthStore();
@@ -78,8 +81,8 @@ export function JobDetail() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
-        <div className="animate-pulse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 h-64" />
-        <div className="animate-pulse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 h-48" />
+        <div className="animate-pulse bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl p-8 h-64" />
+        <div className="animate-pulse bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl p-8 h-48" />
       </div>
     );
   }
@@ -99,6 +102,8 @@ export function JobDetail() {
   }
 
   const saved = isSaved(job.id);
+  const isOwner = user?.id === job.postedById || user?.role === 'ADMIN';
+  const isRecruiter = user?.role === 'RECRUITER' || user?.role === 'ADMIN';
 
   const handleSaveToggle = () => {
     toggle(job.id);
@@ -145,7 +150,7 @@ export function JobDetail() {
       </Link>
 
       {/* Job Header */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm transition-colors">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 p-6 sm:p-8 shadow-sm transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold text-indeed-ink dark:text-white">
@@ -163,11 +168,25 @@ export function JobDetail() {
             </div>
           </div>
 
-          {/* Apply + Save buttons side-by-side */}
+          {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
-            <Button onClick={handleApplyClick} className="flex-1 sm:flex-none">
-              Apply Now
-            </Button>
+            {isOwner ? (
+              <button
+                onClick={() => setEditOpen(true)}
+                type="button"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-indeed-blue text-white hover:bg-indeed-hover transition"
+              >
+                <Pencil className="w-4 h-4" />
+                Edit Job
+              </button>
+            ) : (
+              !isRecruiter && (
+                <Button onClick={handleApplyClick} className="flex-1 sm:flex-none">
+                  Apply Now
+                </Button>
+              )
+            )}
+
             <button
               onClick={handleSaveToggle}
               type="button"
@@ -176,7 +195,7 @@ export function JobDetail() {
               className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm border-2 transition-all ${
                 saved
                   ? 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'
-                  : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indeed-blue hover:text-indeed-blue dark:hover:border-indigo-400 dark:hover:text-indigo-400'
+                  : 'border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indeed-blue hover:text-indeed-blue dark:hover:border-indigo-400 dark:hover:text-indigo-400'
               }`}
             >
               <span className="text-base">{saved ? '❤️' : '🤍'}</span>
@@ -184,10 +203,18 @@ export function JobDetail() {
             </button>
           </div>
         </div>
+
+        {/* Owner note */}
+        {isOwner && (
+          <div className="mt-4 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-xs text-blue-700 dark:text-blue-300 flex items-center gap-2">
+            <Pencil className="w-3.5 h-3.5" />
+            You posted this job — recruiters can't apply to their own postings.
+          </div>
+        )}
       </div>
 
       {/* Description */}
-      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 mt-6 transition-colors">
+      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 p-6 sm:p-8 mt-6 shadow-sm transition-colors">
         <h2 className="text-xl font-semibold text-indeed-ink dark:text-white mb-4">
           Job Description
         </h2>
@@ -197,7 +224,7 @@ export function JobDetail() {
       </section>
 
       {/* Requirements */}
-      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 mt-6 transition-colors">
+      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 p-6 sm:p-8 mt-6 shadow-sm transition-colors">
         <h2 className="text-xl font-semibold text-indeed-ink dark:text-white mb-4">
           Requirements
         </h2>
@@ -206,28 +233,30 @@ export function JobDetail() {
         </p>
       </section>
 
-      {/* Bottom CTA */}
-      <div className="bg-indeed-blue rounded-2xl p-6 sm:p-8 mt-6 text-white text-center">
-        <h2 className="text-xl font-bold">Interested in this role?</h2>
-        <p className="text-indigo-100 mt-2 text-sm">
-          Apply now and get a response within 3 days.
-        </p>
-        <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center">
-          <button
-            onClick={handleApplyClick}
-            className="px-6 py-3 bg-white text-indeed-blue font-semibold rounded-xl hover:bg-indigo-50 transition"
-          >
-            Apply Now
-          </button>
-          <button
-            onClick={handleSaveToggle}
-            className="px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold rounded-xl hover:bg-white/20 transition inline-flex items-center justify-center gap-2"
-          >
-            <span>{saved ? '❤️' : '🤍'}</span>
-            {saved ? 'Saved' : 'Save Job'}
-          </button>
+      {/* Bottom CTA — sirf candidates ko */}
+      {!isOwner && !isRecruiter && (
+        <div className="bg-indeed-blue rounded-2xl p-6 sm:p-8 mt-6 text-white text-center">
+          <h2 className="text-xl font-bold">Interested in this role?</h2>
+          <p className="text-indigo-100 mt-2 text-sm">
+            Apply now and get a response within 3 days.
+          </p>
+          <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={handleApplyClick}
+              className="px-6 py-3 bg-white text-indeed-blue font-semibold rounded-xl hover:bg-indigo-50 transition"
+            >
+              Apply Now
+            </button>
+            <button
+              onClick={handleSaveToggle}
+              className="px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold rounded-xl hover:bg-white/20 transition inline-flex items-center justify-center gap-2"
+            >
+              <span>{saved ? '❤️' : '🤍'}</span>
+              {saved ? 'Saved' : 'Save Job'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Apply Modal */}
       <Modal
@@ -266,6 +295,18 @@ export function JobDetail() {
           </Button>
         </div>
       </Modal>
+
+      {/* Edit Job Modal — sirf owner/ADMIN */}
+      {editOpen && isOwner && (
+        <EditJobModal
+          job={job}
+          onClose={() => setEditOpen(false)}
+          onUpdated={(updated) => {
+            setJob(updated);
+            setEditOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

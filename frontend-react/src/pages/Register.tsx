@@ -34,13 +34,25 @@ export function Register() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const res = await authService.register(data);
+      const res = await authService.register({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+      });
+
       login(res.user, res.accessToken, res.refreshToken);
       toast(`Account created! Welcome, ${res.user.name} 🎉`, 'success');
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
-      const axErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const axErr = err as AxiosError<{
+        message?: string;
+        error?: { message?: string; details?: Record<string, string[]> };
+      }>;
+      const detail = axErr.response?.data?.error?.details;
+      const firstDetail = detail ? Object.values(detail)[0]?.[0] : null;
       const msg =
+        firstDetail ||
         axErr.response?.data?.error?.message ||
         axErr.response?.data?.message ||
         'Registration failed. Please try again.';
@@ -120,6 +132,9 @@ export function Register() {
                   </span>
                 </label>
               </div>
+              {errors.role && (
+                <p className="text-sm text-red-500 mt-1">{errors.role.message}</p>
+              )}
             </div>
 
             <Button type="submit" isLoading={isSubmitting} className="w-full">

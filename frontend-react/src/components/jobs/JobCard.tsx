@@ -1,14 +1,10 @@
 import { Link } from 'react-router-dom';
+import { MapPin, Clock, Bookmark, BookmarkCheck } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { MotionCard } from '@/components/common/MotionCard';
 import { useSavedJobsStore } from '@/store/useSavedJobsStore';
 import { useToast } from '@/contexts/ToastContext';
 import type { Job } from '@/types';
-
-interface JobCardProps {
-  job: Job;
-  index?: number;
-}
 
 const JOB_TYPE_LABEL: Record<Job['type'], string> = {
   FULL_TIME: 'Full-time',
@@ -18,7 +14,7 @@ const JOB_TYPE_LABEL: Record<Job['type'], string> = {
 };
 
 function formatSalary(job: Job): string {
-  if (!job.salaryMin && !job.salaryMax) return 'Salary not disclosed';
+  if (!job.salaryMin && !job.salaryMax) return 'Not disclosed';
   const fmt = (n: number) => `₹${(n / 100000).toFixed(1)}L`;
   if (job.salaryMin && job.salaryMax) return `${fmt(job.salaryMin)} – ${fmt(job.salaryMax)}`;
   if (job.salaryMin) return `From ${fmt(job.salaryMin)}`;
@@ -28,14 +24,16 @@ function formatSalary(job: Job): string {
 function formatRelative(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const days = Math.floor(diff / 86400000);
-  if (days === 0) return 'today';
-  if (days === 1) return '1d ago';
-  if (days < 7) return `${days}d ago`;
+  if (days === 0) return 'Today';
+  if (days === 1) return '1 day ago';
+  if (days < 7) return `${days} days ago`;
   const weeks = Math.floor(days / 7);
-  return `${weeks}w ago`;
+  if (weeks < 4) return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+  const months = Math.floor(days / 30);
+  return `${months} month${months > 1 ? 's' : ''} ago`;
 }
 
-export function JobCard({ job, index = 0 }: JobCardProps) {
+export function JobCard({ job }: { job: Job }) {
   const { toggle, isSaved } = useSavedJobsStore();
   const { toast } = useToast();
   const saved = isSaved(job.id);
@@ -48,57 +46,63 @@ export function JobCard({ job, index = 0 }: JobCardProps) {
   };
 
   return (
-    <MotionCard index={index}>
-      <article className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:shadow-md hover:border-indeed-blue dark:hover:border-indigo-400 transition-colors">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-lg text-indeed-ink dark:text-white truncate">
+    <MotionCard>
+      <Link
+        to={`/jobs/${job.id}`}
+        className="block p-5 sm:p-6 hover:border-indeed-blue dark:hover:border-indigo-500 transition-colors group"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            {/* Title + Company */}
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-indeed-blue dark:group-hover:text-indigo-400 transition-colors truncate">
               {job.title}
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5 truncate">
-              {job.company} · 📍 {job.location}
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 truncate">
+              {job.company}
             </p>
+
+            {/* Meta row */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 text-sm text-slate-600 dark:text-slate-400">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin className="w-4 h-4" />
+                {job.location}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="w-4 h-4" />
+                {formatRelative(job.createdAt)}
+              </span>
+            </div>
+
+            {/* Badges */}
+            <div className="flex flex-wrap gap-2 mt-4">
+              <Badge variant="info">{JOB_TYPE_LABEL[job.type]}</Badge>
+              <Badge>{job.category}</Badge>
+              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 self-center">
+                💰 {formatSalary(job)}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleSave}
-              aria-label={saved ? 'Remove from saved' : 'Save job'}
-              aria-pressed={saved}
-              className="text-xl transition hover:scale-110 active:scale-95"
-              type="button"
-            >
-              {saved ? '❤️' : '🤍'}
-            </button>
-            <Badge variant="info">{JOB_TYPE_LABEL[job.type]}</Badge>
-          </div>
+
+          {/* Save button */}
+          <button
+            type="button"
+            onClick={handleSave}
+            aria-label={saved ? 'Remove from saved' : 'Save job'}
+            aria-pressed={saved}
+            className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${
+              saved
+                ? 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'
+                : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indeed-blue hover:border-indeed-blue dark:hover:text-indigo-400 dark:hover:border-indigo-500'
+            }`}
+          >
+            {saved ? (
+              <BookmarkCheck className="w-5 h-5" />
+            ) : (
+              <Bookmark className="w-5 h-5" />
+            )}
+          </button>
         </div>
-
-        <ul className="flex flex-wrap gap-2 mt-4">
-          <li>
-            <Badge>{job.category}</Badge>
-          </li>
-        </ul>
-
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-4 line-clamp-2">
-          {job.description}
-        </p>
-
-        <div className="flex items-center justify-between mt-5 text-sm">
-          <span className="text-slate-500 dark:text-slate-400">
-            Posted {formatRelative(job.createdAt)}
-          </span>
-          <span className="font-semibold text-slate-800 dark:text-slate-200">
-            {formatSalary(job)}
-          </span>
-        </div>
-
-        <Link
-          to={`/jobs/${job.id}`}
-          className="mt-5 block text-center px-4 py-2 rounded-xl bg-indeed-blue text-white text-sm font-semibold hover:bg-indeed-hover transition"
-        >
-          View Details
-        </Link>
-      </article>
+      </Link>
     </MotionCard>
   );
 }

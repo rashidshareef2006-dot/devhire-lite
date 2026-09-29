@@ -10,9 +10,12 @@ import {
   XCircle,
   Plus,
   Inbox,
+  Pencil,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { applicationsService } from '@/services/applications.service';
+import { DeleteJobButton } from '@/components/jobs/DeleteJobButton';
+import { EditJobModal } from '@/components/jobs/EditJobModal';
 import type { Application, Job } from '@/types';
 
 export function Dashboard() {
@@ -41,13 +44,12 @@ export function Dashboard() {
   );
 }
 
-// ═══════════════════════════════════════════
-// CANDIDATE VIEW
-// ═══════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   CANDIDATE VIEW
+   ═══════════════════════════════════════════════════════════ */
 function CandidateView() {
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     applicationsService
@@ -96,7 +98,6 @@ function CandidateView() {
 
   return (
     <>
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {stats.map((s, i) => (
           <motion.div
@@ -104,22 +105,25 @@ function CandidateView() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800"
+            className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-sm"
           >
             <div
               className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-3`}
             >
               <s.icon className="w-5 h-5 text-white" />
             </div>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white">{s.value}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{s.label}</p>
+            <p className="text-3xl font-bold text-slate-900 dark:text-white">
+              {s.value}
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {s.label}
+            </p>
           </motion.div>
         ))}
       </div>
 
-      {/* Applications */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
           <h2 className="font-semibold text-slate-900 dark:text-white">
             My Applications
           </h2>
@@ -155,7 +159,7 @@ function CandidateView() {
                   <th className="px-6 py-3 font-medium">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                 {apps.map((a) => (
                   <tr
                     key={a.id}
@@ -189,13 +193,14 @@ function CandidateView() {
   );
 }
 
-// ═══════════════════════════════════════════
-// RECRUITER VIEW
-// ═══════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   RECRUITER VIEW
+   ═══════════════════════════════════════════════════════════ */
 function RecruiterView() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -211,7 +216,10 @@ function RecruiterView() {
       .finally(() => setLoading(false));
   }, []);
 
-  const totalApps = jobs.reduce((sum, j) => sum + (j._count?.applications || 0), 0);
+  const totalApps = jobs.reduce(
+    (sum, j) => sum + (j._count?.applications || 0),
+    0,
+  );
 
   const stats = [
     {
@@ -252,7 +260,6 @@ function RecruiterView() {
 
   return (
     <>
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {stats.map((s, i) => (
           <motion.div
@@ -260,22 +267,26 @@ function RecruiterView() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800"
+            className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-sm"
           >
             <div
               className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-3`}
             >
               <s.icon className="w-5 h-5 text-white" />
             </div>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white">{s.value}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{s.label}</p>
+            <p className="text-3xl font-bold text-slate-900 dark:text-white">
+              {s.value}
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {s.label}
+            </p>
           </motion.div>
         ))}
       </div>
 
-      {/* Received Applications — the important one */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+      {/* Recent Applications */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-sm overflow-hidden mb-8">
+        <div className="px-6 py-4 border-b border-slate-300 dark:border-slate-700">
           <h2 className="font-semibold text-slate-900 dark:text-white">
             Recent Applications
           </h2>
@@ -295,7 +306,7 @@ function RecruiterView() {
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="divide-y divide-slate-200 dark:divide-slate-700">
             {apps.map((a, i) => (
               <motion.div
                 key={a.id}
@@ -304,12 +315,10 @@ function RecruiterView() {
                 transition={{ delay: i * 0.03 }}
                 className="px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition flex items-center gap-4"
               >
-                {/* Avatar */}
                 <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shrink-0">
                   {a.candidate?.name?.charAt(0).toUpperCase() || '?'}
                 </div>
 
-                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-slate-900 dark:text-white text-sm">
                     <span className="text-indeed-blue dark:text-indigo-400">
@@ -324,7 +333,7 @@ function RecruiterView() {
                     </Link>
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {a.candidate?.email} · {formatRelative(a.createdAt)}
+                    {a.candidate?.email} • {formatRelative(a.createdAt)}
                   </p>
                   {a.coverLetter && (
                     <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-2 italic">
@@ -333,12 +342,10 @@ function RecruiterView() {
                   )}
                 </div>
 
-                {/* Status */}
                 <div className="hidden sm:block shrink-0">
                   <StatusBadge status={a.status} />
                 </div>
 
-                {/* Message button */}
                 <button
                   onClick={() => navigate(`/messages?u=${a.candidate?.id}`)}
                   className="shrink-0 p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white hover:shadow-lg hover:shadow-blue-500/30 transition"
@@ -381,7 +388,7 @@ function RecruiterView() {
           {jobs.map((j) => (
             <div
               key={j.id}
-              className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex justify-between items-start gap-4 hover:border-indeed-blue dark:hover:border-indigo-400 transition"
+              className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-sm flex justify-between items-start gap-4 hover:border-indeed-blue dark:hover:border-indigo-400 transition"
             >
               <div className="min-w-0 flex-1">
                 <Link
@@ -391,25 +398,61 @@ function RecruiterView() {
                   {j.title}
                 </Link>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  {j.company} · {j.location} · Posted {formatRelative(j.createdAt)}
+                  {j.company} • {j.location} • Posted {formatRelative(j.createdAt)}
                 </p>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 <span className="px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-indeed-blue dark:text-indigo-400 text-xs font-semibold">
                   {j._count?.applications || 0} applications
                 </span>
+
+                {/* ✏️ Edit button */}
+                <button
+                  type="button"
+                  onClick={() => setEditingJob(j)}
+                  title="Edit job"
+                  aria-label={`Edit ${j.title}`}
+                  className="p-2 rounded-lg text-slate-500 hover:text-indeed-blue hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+
+                {/* 🗑️ Delete button */}
+                <DeleteJobButton
+                  jobId={j.id}
+                  jobTitle={j.title}
+                  onDeleted={(id) =>
+                    setJobs((prev) => prev.filter((job) => job.id !== id))
+                  }
+                />
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Edit Modal */}
+      {editingJob && (
+        <EditJobModal
+          job={editingJob}
+          onClose={() => setEditingJob(null)}
+          onUpdated={(updated) => {
+            setJobs((prev) =>
+              prev.map((j) =>
+                j.id === updated.id ? { ...j, ...updated } : j,
+              ),
+            );
+            setEditingJob(null);
+          }}
+        />
+      )}
     </>
   );
 }
 
-// ═══════════════════════════════════════════
-// Helpers
-// ═══════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   Helpers
+   ═══════════════════════════════════════════════════════════ */
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
     APPLIED: {

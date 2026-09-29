@@ -1,5 +1,6 @@
 import express from 'express';
 import http from 'http';
+import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -10,15 +11,24 @@ import jobsRoutes from './routes/jobs.routes.js';
 import messagesRoutes from './routes/messages.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import applicationsRoutes from './routes/applications.routes.js';
+import aboutRoutes from './routes/about.routes.js';
+import usersRoutes from './routes/users.routes.js';           // 👈 NEW
 import { disconnectPrisma } from './lib/prisma.js';
 import { initSocket } from './lib/socket.js';
 
 const app = express();
 
 // Security
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },    // 👈 allow <img> from client origin
+  }),
+);
 app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
+
+// Static uploads (avatars etc.)
+app.use('/uploads', express.static(path.resolve('uploads')));  // 👈 NEW
 
 // Rate limiting
 app.use(
@@ -66,6 +76,11 @@ app.get('/', (_req, res) => {
         received: 'GET /api/applications/received',
         myJobs: 'GET /api/applications/my-jobs',
       },
+      users: {                                                // 👈 NEW
+        profile: 'GET /api/users/profile',
+        update: 'PUT /api/users/profile',
+        avatar: 'POST /api/users/avatar',
+      },
       admin: {
         login: 'POST /api/admin/login',
         stats: 'GET /api/admin/stats',
@@ -80,7 +95,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/applications', applicationsRoutes);
+app.use('/api/users', usersRoutes);                           // 👈 NEW
 app.use('/api/admin', adminRoutes);
+app.use('/api/about', aboutRoutes);
 
 // 404 + errors
 app.use(notFoundHandler);

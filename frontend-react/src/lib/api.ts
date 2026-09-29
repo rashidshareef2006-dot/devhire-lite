@@ -16,11 +16,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response: 401 pe auto-logout
+// Response: 401 pe auto-logout (sirf non-auth endpoints pe)
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
+    const url: string = error.config?.url ?? '';
+    const isAuthCall =
+      url.includes('/auth/login') ||
+      url.includes('/auth/register') ||
+      url.includes('/auth/refresh');
+
+    if (error.response?.status === 401 && !isAuthCall) {
       useAuthStore.getState().logout();
     }
     return Promise.reject(error);

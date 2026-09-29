@@ -122,9 +122,11 @@ export function Login() {
             </Link>
           </p>
 
-          <div className="mt-6 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 text-xs text-center text-indigo-700 dark:text-indigo-300">
-            🔑 Test: <b>rashi@test.com</b> / <b>password123</b>
-          </div>
+          {import.meta.env.DEV && (
+            <div className="mt-6 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 text-xs text-center text-indigo-700 dark:text-indigo-300">
+              🔑 Test: <b>rashi@test.com</b> / <b>password123</b>
+            </div>
+          )}
         </div>
       </div>
     </div>

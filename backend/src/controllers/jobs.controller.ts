@@ -124,20 +124,25 @@ export async function updateJob(req: Request, res: Response, next: NextFunction)
   }
 }
 
+// ✅ DELETE job — owner ya ADMIN only
 export async function deleteJob(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.user) throw new AppError(401, 'UNAUTHORIZED', 'Unauthorized');
 
-    const existing = await prisma.job.findUnique({ where: { id: req.params.id } });
+    const existing = await prisma.job.findUnique({
+      where: { id: req.params.id },
+      select: { id: true, postedById: true, title: true },
+    });
     if (!existing) throw new AppError(404, 'JOB_NOT_FOUND', 'Job not found');
 
     if (existing.postedById !== req.user.sub && req.user.role !== 'ADMIN') {
       throw new AppError(403, 'FORBIDDEN', 'You can only delete your own jobs');
     }
 
+    // Cascade handles applications + saved_jobs
     await prisma.job.delete({ where: { id: req.params.id } });
 
-    res.json({ success: true, data: { message: 'Job deleted' } });
+    res.json({ success: true, data: { id: existing.id, deleted: true } });
   } catch (err) {
     next(err);
   }
@@ -164,6 +169,33 @@ export async function applyToJob(req: Request, res: Response, next: NextFunction
     });
 
     res.status(201).json({ success: true, data: application });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// PUBLIC: Homepage stats
+export async function getPublicStats(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const [totalJobs, totalUsers, totalApplications, distinctCompanies] = await Promise.all([
+      prisma.job.count({ where: { isActive: true } }),
+      prisma.user.count(),
+      prisma.application.count(),
+      prisma.job.findMany({
+        distinct: ['company'],
+        select: { company: true },
+      }),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalJobs,
+        totalUsers,
+        totalApplications,
+        totalCompanies: distinctCompanies.length,
+      },
+    });
   } catch (err) {
     next(err);
   }

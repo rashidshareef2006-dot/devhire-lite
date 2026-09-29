@@ -70,9 +70,9 @@ export function SavedJobs() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {savedJobs.map((job, i) => (
-            <JobCard key={job.id} job={job} index={i} />
-          ))}
+          {savedJobs.map((job) => (
+  <JobCard key={job.id} job={job} />
+))}
         </div>
       )}
     </div>

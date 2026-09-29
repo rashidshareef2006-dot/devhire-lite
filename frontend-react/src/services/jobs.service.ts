@@ -34,6 +34,13 @@ export interface CreateJobInput {
   requirements: string;
 }
 
+export interface PublicStats {
+  totalJobs: number;
+  totalUsers: number;
+  totalApplications: number;
+  totalCompanies: number;
+}
+
 export const jobsService = {
   async list(
     filters: JobFilters = {},
@@ -69,4 +76,13 @@ export const jobsService = {
   async apply(id: string, coverLetter?: string): Promise<void> {
     await api.post(`/jobs/${id}/apply`, { coverLetter });
   },
+
+  // 👇 NEW — homepage stats
+  async stats(): Promise<PublicStats> {
+    const { data } = await api.get<ApiListResponse<PublicStats>>('/jobs/stats');
+    return data.data;
+  },
+
+  deleteJob: (id: string) =>
+  api.delete(`/jobs/${id}`).then((r) => r.data),
 };

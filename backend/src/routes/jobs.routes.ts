@@ -6,18 +6,23 @@ import {
   updateJob,
   deleteJob,
   applyToJob,
+  getPublicStats,
 } from '../controllers/jobs.controller.js';
 import { authenticate, requireRole } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
+/* ── public ── */
+router.get('/stats', getPublicStats);   // static BEFORE /:id
 router.get('/', listJobs);
 router.get('/:id', getJob);
 
+/* ── recruiter/admin ── */
 router.post('/', authenticate, requireRole('RECRUITER', 'ADMIN'), createJob);
 router.put('/:id', authenticate, requireRole('RECRUITER', 'ADMIN'), updateJob);
 router.delete('/:id', authenticate, requireRole('RECRUITER', 'ADMIN'), deleteJob);
 
+/* ── candidate ── */
 router.post('/:id/apply', authenticate, requireRole('CANDIDATE'), applyToJob);
 
 export default router;

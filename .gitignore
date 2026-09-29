@@ -1,7 +1,52 @@
-node_modules/
-.env
-.env.local
-dist/
-build/
-.DS_Store
+# ─── Logs ───
+logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ─── Dependencies ───
+node_modules
+.pnp
+.pnp.js
+
+# ─── Build outputs ───
+dist
+dist-ssr
+build
+*.local
+
+# ─── Environment variables (CRITICAL) ───
+.env
+.env.*
+!.env.example
+
+# ─── Editor directories ───
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─── Prisma ───
+backend/prisma/migrations/**/migration_lock.toml.bak
+
+# ─── Deployment platforms ───
+.vercel
+.render
+
+# ─── Test coverage ───
+coverage
+*.lcov
+
+backend/uploads/
+*-build.txt
+build-*.txt
+all_files.txt
+cls

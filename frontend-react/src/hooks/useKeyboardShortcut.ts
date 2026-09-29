@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface ShortcutOptions {
   key: string;
@@ -8,16 +8,42 @@ interface ShortcutOptions {
   altKey?: boolean;
   enabled?: boolean;
   preventDefault?: boolean;
+  ignoreInputs?: boolean;
 }
 
 export function useKeyboardShortcut(
-  { key, ctrlKey, metaKey, shiftKey, altKey, enabled = true, preventDefault = true }: ShortcutOptions,
+  {
+    key,
+    ctrlKey,
+    metaKey,
+    shiftKey,
+    altKey,
+    enabled = true,
+    preventDefault = true,
+    ignoreInputs = false,
+  }: ShortcutOptions,
   handler: (e: KeyboardEvent) => void,
 ) {
+  const handlerRef = useRef(handler);
+  handlerRef.current = handler;
+
   useEffect(() => {
     if (!enabled) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
+      if (ignoreInputs) {
+        const target = e.target as HTMLElement | null;
+        const tag = target?.tagName?.toLowerCase();
+        if (
+          tag === 'input' ||
+          tag === 'textarea' ||
+          tag === 'select' ||
+          target?.isContentEditable
+        ) {
+          return;
+        }
+      }
+
       const keyMatch = e.key.toLowerCase() === key.toLowerCase();
       const ctrlMatch = ctrlKey === undefined || e.ctrlKey === ctrlKey;
       const metaMatch = metaKey === undefined || e.metaKey === metaKey;
@@ -26,11 +52,11 @@ export function useKeyboardShortcut(
 
       if (keyMatch && ctrlMatch && metaMatch && shiftMatch && altMatch) {
         if (preventDefault) e.preventDefault();
-        handler(e);
+        handlerRef.current(e);
       }
     };
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [key, ctrlKey, metaKey, shiftKey, altKey, enabled, preventDefault, handler]);
+  }, [key, ctrlKey, metaKey, shiftKey, altKey, enabled, preventDefault, ignoreInputs]);
 }

@@ -5,9 +5,11 @@ import { AppError } from './error.middleware.js';
 import type { Role } from '@prisma/client';
 
 export interface JwtPayload {
-  sub: string;
+  sub: string;        // JWT standard
+  id?: string;        // 👈 normalize (runtime pe set karte hain)
   email: string;
   role: Role;
+  userId?: string;    // 👈 backward-compat
 }
 
 declare global {
@@ -30,7 +32,15 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
   const token = header.slice(7);
   try {
     const payload = jwt.verify(token, env.JWT_ACCESS_SECRET) as JwtPayload;
-    req.user = payload;
+
+    // 🔑 NORMALIZE: har controller `req.user.id` padh raha hai —
+    // JWT me sirf `sub` hai, isliye yahan map kar dete hain.
+    req.user = {
+      ...payload,
+      id:     payload.sub,
+      userId: payload.sub,
+    };
+
     next();
   } catch {
     next(new AppError(401, 'TOKEN_INVALID', 'Invalid or expired token'));

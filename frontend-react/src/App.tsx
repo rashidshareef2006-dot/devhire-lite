@@ -13,31 +13,32 @@ import { SavedJobs } from '@/pages/SavedJobs';
 import { NotFound } from '@/pages/NotFound';
 import { AdminLogin } from '@/pages/AdminLogin';
 import { AdminDashboard } from '@/pages/AdminDashboard';
-
+import { About } from '@/pages/About';
 import { PostJob } from '@/pages/PostJob';
 import Messages from '@/pages/Messages';
+import { Profile } from '@/pages/Profile';
 
-export default function App() {
+export function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
         <Routes>
-          {/* ADMIN ROUTES */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
-          {/* PUBLIC + USER ROUTES */}
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/jobs/:id" element={<JobDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/about" element={<About />} />
 
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/saved" element={<SavedJobs />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['RECRUITER', 'ADMIN']} />}>

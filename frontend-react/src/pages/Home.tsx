@@ -1,22 +1,30 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, MapPin, Briefcase, TrendingUp, Users, Award, ArrowRight } from 'lucide-react';
+import {
+  Search,
+  MapPin,
+  Briefcase,
+  TrendingUp,
+  Users,
+  Building2,
+  ArrowRight,
+} from 'lucide-react';
 import { JobCard } from '@/components/jobs/JobCard';
-import { jobsService } from '@/services/jobs.service';
+import { jobsService, type PublicStats } from '@/services/jobs.service';
 import type { Job } from '@/types';
 
 const features = [
   {
     icon: '📝',
     title: 'Post a Job',
-    desc: 'Get started with a job post. Reach 20.1M unique monthly users.',
+    desc: 'Create a job listing in minutes and reach qualified candidates instantly.',
     color: 'from-blue-500 to-cyan-500',
   },
   {
     icon: '🔍',
     title: 'Find Quality Applicants',
-    desc: 'Customise your post with screening tools to narrow down candidates.',
+    desc: 'Browse applications, filter by skills and experience, and shortlist the best.',
     color: 'from-purple-500 to-pink-500',
   },
   {
@@ -28,16 +36,9 @@ const features = [
   {
     icon: '✅',
     title: 'Hire Confidently',
-    desc: 'Helpful resources for every step of the hiring process.',
+    desc: 'Role-based dashboards keep every step of your hiring process organised.',
     color: 'from-green-500 to-emerald-500',
   },
-];
-
-const stats = [
-  { icon: Users, value: '20.1M+', label: 'Monthly Users' },
-  { icon: Briefcase, value: '250M+', label: 'Resumes' },
-  { icon: TrendingUp, value: '98%', label: 'Success Rate' },
-  { icon: Award, value: '10K+', label: 'Companies' },
 ];
 
 const fadeUp = {
@@ -45,37 +46,45 @@ const fadeUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.1, duration: 0.5, ease: 'easeOut' },
+    transition: { delay: i * 0.1, duration: 0.5, ease: 'easeOut' as const },
   }),
 };
 
 export function Home() {
   const [featured, setFeatured] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    jobsService
-      .list({ limit: 6 })
-      .then(({ jobs }) => {
-        if (!cancelled) setFeatured(jobs);
-      })
-      .catch(() => {
-        if (!cancelled) setFeatured([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+
+    Promise.all([
+      jobsService.list({ limit: 6 }).catch(() => ({ jobs: [], pagination: undefined })),
+      jobsService.stats().catch(() => null),
+    ]).then(([listRes, statsRes]) => {
+      if (cancelled) return;
+      setFeatured(listRes.jobs);
+      setStats(statsRes);
+      setLoading(false);
+    });
+
     return () => {
       cancelled = true;
     };
   }, []);
 
+  // Real stats — skeleton values jab tak load ho
+  const statsDisplay = [
+    { icon: Briefcase, value: stats?.totalJobs ?? 0, label: 'Open Jobs' },
+    { icon: Users, value: stats?.totalUsers ?? 0, label: 'Active Users' },
+    { icon: TrendingUp, value: stats?.totalApplications ?? 0, label: 'Applications' },
+    { icon: Building2, value: stats?.totalCompanies ?? 0, label: 'Companies' },
+  ];
+
   return (
     <div className="overflow-x-hidden">
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative overflow-hidden bg-slate-950">
-        {/* Background image (subtle) */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
@@ -84,14 +93,9 @@ export function Home() {
             opacity: 0.35,
           }}
         />
-
-        {/* Dark gradient overlay — makes text readable */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-950/85 to-blue-950/70" />
-
-        {/* Mesh gradient on top */}
         <div className="absolute inset-0 bg-mesh-gradient opacity-50" />
 
-        {/* Floating blobs */}
         <div className="absolute top-20 -left-20 w-72 h-72 bg-blue-500/25 rounded-full blur-3xl animate-float" />
         <div
           className="absolute top-40 -right-20 w-96 h-96 bg-purple-500/25 rounded-full blur-3xl animate-float"
@@ -104,15 +108,16 @@ export function Home() {
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
           <motion.div initial="hidden" animate="visible" className="max-w-3xl">
-            {/* Badge */}
+            {/* Badge — real data se */}
             <motion.div variants={fadeUp} custom={0}>
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm font-medium text-blue-100 mb-6">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                Hiring is live — 6 new jobs today
+                {stats && stats.totalJobs > 0
+                  ? `${stats.totalJobs} open job${stats.totalJobs > 1 ? 's' : ''} available now`
+                  : 'Hiring is live — be the first to post'}
               </span>
             </motion.div>
 
-            {/* Heading */}
             <motion.h1
               variants={fadeUp}
               custom={1}
@@ -125,7 +130,6 @@ export function Home() {
               . Fast.
             </motion.h1>
 
-            {/* Subtext */}
             <motion.p
               variants={fadeUp}
               custom={2}
@@ -135,7 +139,7 @@ export function Home() {
               you'll find the right people here.
             </motion.p>
 
-            {/* Glass Search Bar */}
+            {/* Search bar */}
             <motion.div
               variants={fadeUp}
               custom={3}
@@ -166,15 +170,17 @@ export function Home() {
               </Link>
             </motion.div>
 
-            {/* Small stats */}
+            {/* Hero small stats — real data */}
             <motion.div variants={fadeUp} custom={4} className="mt-6 flex flex-wrap gap-6">
               {[
-                { v: '20.1M+', l: 'users' },
-                { v: '250M+', l: 'resumes' },
-                { v: '4.8★', l: 'rating' },
+                { v: stats?.totalJobs ?? 0, l: 'jobs' },
+                { v: stats?.totalUsers ?? 0, l: 'users' },
+                { v: stats?.totalApplications ?? 0, l: 'applications' },
               ].map((s) => (
                 <div key={s.l} className="flex items-center gap-2">
-                  <span className="text-xl font-bold text-white">{s.v}</span>
+                  <span className="text-xl font-bold text-white">
+                    {s.v.toLocaleString()}
+                  </span>
                   <span className="text-sm text-slate-400">{s.l}</span>
                 </div>
               ))}
@@ -187,7 +193,7 @@ export function Home() {
       <section className="bg-white dark:bg-slate-900 border-y border-slate-200 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((s, i) => (
+            {statsDisplay.map((s, i) => (
               <motion.div
                 key={s.label}
                 initial={{ opacity: 0, y: 20 }}
@@ -201,7 +207,7 @@ export function Home() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {s.value}
+                    {s.value.toLocaleString()}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">{s.label}</p>
                 </div>
@@ -287,9 +293,9 @@ export function Home() {
             </div>
           ) : featured.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {featured.map((job, i) => (
-                <JobCard key={job.id} job={job} index={i} />
-              ))}
+              {featured.map((job) => (
+  <JobCard key={job.id} job={job} />
+))}
             </div>
           ) : (
             <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
@@ -317,7 +323,7 @@ export function Home() {
             Ready to find your next great developer?
           </motion.h2>
           <p className="mt-4 text-blue-100 text-lg max-w-2xl mx-auto">
-            Join thousands of companies already hiring on DevHire Lite.
+            Join a growing community of companies already hiring on DevHire Lite.
           </p>
           <Link
             to="/register"

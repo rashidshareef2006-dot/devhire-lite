@@ -17,4 +17,10 @@ export const messagesService = {
     api
       .get<ApiRes<ChatUser[]>>(`/messages/users/search?q=${encodeURIComponent(q)}`)
       .then((r) => r.data.data),
+
+  deleteMessage: (messageId: string) =>
+    api.delete(`/messages/message/${messageId}`).then((r) => r.data),
+
+  clearConversation: (userId: string) =>
+    api.delete(`/messages/${userId}`).then((r) => r.data),
 };

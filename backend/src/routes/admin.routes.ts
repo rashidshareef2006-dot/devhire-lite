@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
+import { updateAbout } from '../controllers/about.controller.js';
 import {
   adminLogin,
   getAdminStats,
@@ -31,7 +32,7 @@ router.post('/login', adminLoginLimiter, adminLogin);
 
 // Protected admin routes
 router.use(authenticateAdmin);
-
+router.put('/about', updateAbout);
 router.get('/stats', getAdminStats);
 router.get('/users', getAllUsers);
 router.get('/jobs', getAllJobs);

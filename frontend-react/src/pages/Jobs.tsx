@@ -26,16 +26,17 @@ export function Jobs() {
 
   const debouncedSearch = useDebounce(search, 300);
 
+  // Press "/" to focus search (skip when typing in inputs)
   useKeyboardShortcut(
-    '/',
+    { key: '/', ignoreInputs: true },
     () => {
       const input = document.querySelector<HTMLInputElement>('input[name="search"]');
       input?.focus();
     },
-    { ignoreInputs: true },
   );
 
-  useKeyboardShortcut('Escape', () => setSearch(''));
+  // Press "Escape" to clear search
+  useKeyboardShortcut({ key: 'Escape' }, () => setSearch(''));
 
   // Fetch from API
   useEffect(() => {
@@ -44,7 +45,7 @@ export function Jobs() {
     setError(null);
 
     jobsService
-  .list({ q: debouncedSearch || undefined, limit: 50 })
+      .list({ q: debouncedSearch || undefined, limit: 50 })
       .then(({ jobs }) => {
         if (!cancelled) setJobs(jobs);
       })
@@ -185,8 +186,8 @@ export function Jobs() {
 
           {!loading && !error && pageItems.length > 0 && (
             <div className="grid gap-4">
-              {pageItems.map((job, index) => (
-                <JobCard key={job.id} job={job} index={index} />
+              {pageItems.map((job) => (
+                <JobCard key={job.id} job={job} />
               ))}
             </div>
           )}

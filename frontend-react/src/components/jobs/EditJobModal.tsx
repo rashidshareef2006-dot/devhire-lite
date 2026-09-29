@@ -1,17 +1,13 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate } from 'react-router-dom';
-import { Briefcase } from 'lucide-react';
-import { Input } from '../components/common/Input';
-import { Button } from '../components/common/Button';
-import { MotionCard } from '../components/common/MotionCard';
-import { useToast } from '../contexts/ToastContext';
-import { useAuthStore } from '@/store/useAuthStore';
-import { jobsService } from '@/services/jobs.service';
+import { X, Loader2, Save, Pencil } from 'lucide-react';
 import { AxiosError } from 'axios';
+import { Input } from '@/components/common/Input';
+import { useToast } from '@/contexts/ToastContext';
+import { jobsService } from '@/services/jobs.service';
+import type { Job } from '@/types';
 
-// Frontend form ke labels — user-friendly
 const JOB_TYPE_OPTIONS = [
   { label: 'Full-time', value: 'FULL_TIME' },
   { label: 'Part-time', value: 'PART_TIME' },
@@ -33,34 +29,37 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export function PostJob() {
-  const navigate = useNavigate();
+interface Props {
+  job: Job;
+  onClose: () => void;
+  onUpdated: (job: Job) => void;
+}
+
+export function EditJobModal({ job, onClose, onUpdated }: Props) {
   const { toast } = useToast();
-  const { user, isAuthenticated } = useAuthStore();
 
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { type: 'FULL_TIME' },
+    defaultValues: {
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      type: job.type,
+      category: job.category,
+      salaryMin: job.salaryMin ?? undefined,
+      salaryMax: job.salaryMax ?? undefined,
+      description: job.description,
+      requirements: job.requirements,
+    },
   });
 
   const onSubmit = async (data: FormData) => {
-    if (!isAuthenticated) {
-      toast('Please login first', 'error');
-      return;
-    }
-
-    if (user?.role !== 'RECRUITER' && user?.role !== 'ADMIN') {
-      toast('Only recruiters can post jobs', 'error');
-      return;
-    }
-
     try {
-      await jobsService.create({
+      const updated = await jobsService.update(job.id, {
         title: data.title,
         company: data.company,
         location: data.location,
@@ -71,13 +70,10 @@ export function PostJob() {
         description: data.description,
         requirements: data.requirements,
       });
-
-      toast('🎉 Job posted successfully!', 'success');
-      reset();
-      navigate('/jobs');
+      toast('Job updated successfully', 'success');
+      onUpdated(updated);
     } catch (err) {
       const axErr = err as AxiosError<{
-        message?: string;
         error?: { message?: string; details?: Record<string, string[]> };
       }>;
       const detail = axErr.response?.data?.error?.details;
@@ -85,22 +81,43 @@ export function PostJob() {
       const msg =
         firstDetail ||
         axErr.response?.data?.error?.message ||
-        axErr.response?.data?.message ||
-        'Failed to post job. Try again.';
+        'Failed to update job. Try again.';
       toast(msg, 'error');
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <Briefcase className="w-7 h-7 text-indeed-blue" />
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Post a New Job</h1>
-      </div>
+    <div
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-6 overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isSubmitting) onClose();
+      }}
+    >
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full my-auto border border-slate-300 dark:border-slate-700">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <Pencil className="w-5 h-5 text-indeed-blue dark:text-indigo-400" />
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              Edit Job
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-white transition disabled:opacity-50"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-      <MotionCard className="p-6" hover={false}>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div className="grid gap-5 sm:grid-cols-2">
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-6 space-y-5 max-h-[70vh] overflow-y-auto"
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
             <Input
               label="Job Title"
               placeholder="Senior React Developer"
@@ -174,7 +191,9 @@ export function PostJob() {
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indeed-blue resize-y"
             />
             {errors.description && (
-              <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>
+              <p className="text-sm text-red-500 mt-1">
+                {errors.description.message}
+              </p>
             )}
           </div>
 
@@ -189,20 +208,40 @@ export function PostJob() {
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indeed-blue resize-y"
             />
             {errors.requirements && (
-              <p className="text-sm text-red-500 mt-1">{errors.requirements.message}</p>
+              <p className="text-sm text-red-500 mt-1">
+                {errors.requirements.message}
+              </p>
             )}
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={() => reset()}>
-  Reset
-</Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Posting...' : 'Post Job'}
-            </Button>
+          {/* Footer */}
+          <div className="flex justify-end gap-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-4 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-indeed-blue hover:bg-indeed-hover transition disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" /> Save Changes
+                </>
+              )}
+            </button>
           </div>
         </form>
-      </MotionCard>
+      </div>
     </div>
   );
 }

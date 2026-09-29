@@ -1,9 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { prisma } from '../lib/prisma.js';
+import { paramId } from '../lib/param.js';
 import { AppError } from '../middleware/error.middleware.js';
 import { env } from '../config/env.js';
+import { prisma } from '../lib/prisma.js';
 
 const loginSchema = z.object({
   username: z.string().min(1),
@@ -137,10 +138,11 @@ export async function getAllApplications(_req: Request, res: Response, next: Nex
 // ─── DELETE USER ───
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+  const id = paramId(req);
+    const user = await prisma.user.findUnique({ where: { id } });
     if (!user) throw new AppError(404, 'USER_NOT_FOUND', 'User not found');
 
-    await prisma.user.delete({ where: { id: req.params.id } });
+    await prisma.user.delete({ where: { id } });
     res.json({ success: true, data: { message: 'User deleted' } });
   } catch (err) {
     next(err);
@@ -150,10 +152,11 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
 // ─── DELETE JOB ───
 export async function deleteJobAdmin(req: Request, res: Response, next: NextFunction) {
   try {
-    const job = await prisma.job.findUnique({ where: { id: req.params.id } });
+    const id = paramId(req);
+    const job = await prisma.job.findUnique({ where: { id } });
     if (!job) throw new AppError(404, 'JOB_NOT_FOUND', 'Job not found');
 
-    await prisma.job.delete({ where: { id: req.params.id } });
+    await prisma.job.delete({ where: { id } });
     res.json({ success: true, data: { message: 'Job deleted' } });
   } catch (err) {
     next(err);
@@ -163,11 +166,71 @@ export async function deleteJobAdmin(req: Request, res: Response, next: NextFunc
 // ─── DELETE APPLICATION ───
 export async function deleteApplication(req: Request, res: Response, next: NextFunction) {
   try {
-    const app = await prisma.application.findUnique({ where: { id: req.params.id } });
+    const id = paramId(req);
+    const app = await prisma.application.findUnique({ where: { id } });
     if (!app) throw new AppError(404, 'APPLICATION_NOT_FOUND', 'Application not found');
 
-    await prisma.application.delete({ where: { id: req.params.id } });
+    await prisma.application.delete({ where: { id } });
     res.json({ success: true, data: { message: 'Application deleted' } });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// ─── ABOUT ───
+// ═══════════════════════════════════════════════════════
+
+// GET /api/about  (public)
+export async function getAbout(_req: Request, res: Response, next: NextFunction) {
+  try {
+    let about = await prisma.aboutProfile.findFirst();
+    if (!about) {
+      about = await prisma.aboutProfile.create({
+        data: {
+          name: 'Your Name',
+          title: 'Full Stack Developer',
+          photoUrl: null,
+          location: 'City, Country',
+          email: 'you@example.com',
+          bio: 'Tell your story here.',
+          skills: [],
+          projects: [],
+          education: 'Your Degree',
+          educationUrl: null,
+          socialLinks: [],
+        },
+      });
+    }
+    res.json({ success: true, data: about });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// PUT /api/admin/about  (admin)
+export async function updateAbout(req: Request, res: Response, next: NextFunction) {
+  try {
+    const existing = await prisma.aboutProfile.findFirst();
+    if (!existing) throw new AppError(404, 'ABOUT_NOT_FOUND', 'About profile not found');
+
+    const updated = await prisma.aboutProfile.update({
+      where: { id: existing.id },
+      data: {
+        name: req.body.name,
+        title: req.body.title,
+        photoUrl: req.body.photoUrl || null,
+        location: req.body.location,
+        email: req.body.email,
+        bio: req.body.bio,
+        skills: req.body.skills ?? [],
+        projects: req.body.projects ?? [],
+        education: req.body.education,
+        educationUrl: req.body.educationUrl || null,
+        socialLinks: req.body.socialLinks ?? [],
+      },
+    });
+    res.json({ success: true, data: updated });
   } catch (err) {
     next(err);
   }
