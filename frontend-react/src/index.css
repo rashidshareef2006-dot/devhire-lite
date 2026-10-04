@@ -1,230 +1,261 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ═══════════════ THEME TOKENS ═══════════════ */
-@theme {
-  /* Brand colors */
-  --color-indeed-blue: #003a9b;
-  --color-indeed-ink: #00123c;
-  --color-indeed-light: #f3f2f1;
-  --color-indeed-hover: #2557a7;
+/* ═══════════════════════════════════════════════════════
+   STITCH "PRECISION DISCOVERY" — Global Styles
+   Design system: DevHire Lite × Stitch Project 7104340314056633206
+═══════════════════════════════════════════════════════ */
 
-  /* Fonts */
-  --font-sans: 'Noto Sans', system-ui, sans-serif;
-
-  /* Custom animations */
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-gradient-shift: gradient-shift 8s ease infinite;
-  --animate-shimmer: shimmer 2s linear infinite;
-  --animate-fade-up: fade-up 0.5s ease-out both;
-  --animate-slide-in: slide-in 0.4s ease-out both;
-  --animate-pulse-slow: pulse-slow 3s ease-in-out infinite;
-
-  /* Custom background images (usable as bg-mesh-gradient etc.) */
-  --background-image-mesh-gradient:
-    radial-gradient(at 20% 20%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, rgba(147, 51, 234, 0.12) 0px, transparent 50%),
-    radial-gradient(at 0% 80%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
-
-  --background-image-shimmer:
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-
-  --background-image-grid-pattern:
-    linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
-}
-
-/* ═══════════════ KEYFRAMES ═══════════════ */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-}
-
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-@keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
-}
-
+/* ── Keyframes ─────────────────────────────────────── */
 @keyframes fade-up {
-  0% { opacity: 0; transform: translateY(20px); }
+  0%   { opacity: 0; transform: translateY(16px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes slide-in {
-  0% { opacity: 0; transform: translateX(-20px); }
+  0%   { opacity: 0; transform: translateX(-16px); }
   100% { opacity: 1; transform: translateX(0); }
 }
-
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-12px); }
+}
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position:  800px 0; }
+}
 @keyframes pulse-slow {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  50%       { opacity: 0.6; }
 }
-
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
+}
+@keyframes card-lift {
+  0%   { box-shadow: 0 2px 6px rgba(23,24,25,.04); }
+  100% { box-shadow: 0 8px 20px rgba(23,24,25,.08); }
 }
 
-/* ═══════════════ BASE ═══════════════ */
+/* ── Base ───────────────────────────────────────────── */
 @layer base {
   html {
     scroll-behavior: smooth;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   body {
-    @apply bg-white text-slate-800 antialiased font-sans;
+    background-color: #f8f9ff;
+    color: #181c21;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
   }
 
   h1, h2, h3 {
     letter-spacing: -0.02em;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   *:focus-visible {
-    outline: 2px solid #003a9b;
+    outline: 2px solid #79d2f2;
     outline-offset: 2px;
     border-radius: 6px;
   }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-slate-100 dark:bg-slate-900;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-slate-300 dark:bg-slate-700 rounded-full;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-400 dark:bg-slate-600;
+  /* Scrollbar — subtle */
+  ::-webkit-scrollbar       { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f0f4fc; }
+  ::-webkit-scrollbar-thumb { background: #c5c6c9; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #75777a; }
+
+  /* Material Symbols */
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
   }
 }
 
-/* ═══════════════ COMPONENTS ═══════════════ */
+/* ── Components ─────────────────────────────────────── */
 @layer components {
-  /* ── Inputs ── */
-  .input-field {
-    @apply w-full px-4 py-3 border border-slate-200 rounded-xl text-[0.95rem]
-           focus:outline-none focus:border-indeed-blue
-           focus:ring-4 focus:ring-indeed-blue/15 transition
-           dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200;
+
+  /* ─ Stitch Navbar (obsidian dark) ─ */
+  .stitch-nav {
+    background-color: #171819;
+    color: #ffffff;
   }
 
-  /* ── Buttons ── */
+  /* ─ Stitch Sub-toolbar (dark secondary) ─ */
+  .stitch-subtoolbar {
+    background-color: #252629;
+    color: #ffffff;
+  }
+
+  /* ─ Primary button (obsidian) ─ */
   .btn-primary {
-    @apply inline-block px-6 py-3 bg-indeed-blue text-white font-semibold rounded-xl
-           hover:bg-indeed-hover focus:outline-none focus:ring-2 focus:ring-indeed-blue
-           focus:ring-offset-2 transition relative overflow-hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.625rem 1.25rem;
+    background-color: #171819;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 18px;
+    letter-spacing: 0.01em;
+    border-radius: 0.625rem;
+    transition: background-color 150ms;
+    cursor: pointer;
+  }
+  .btn-primary:hover { background-color: #252629; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  /* ─ Secondary button (outline) ─ */
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.625rem 1.25rem;
+    background-color: transparent;
+    color: #181c21;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 18px;
+    border: 1px solid #d9dce1;
+    border-radius: 0.625rem;
+    transition: background-color 150ms;
+    cursor: pointer;
+  }
+  .btn-secondary:hover { background-color: #f5f6f8; }
+
+  /* ─ Accent button (cyan) ─ */
+  .btn-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.625rem 1.25rem;
+    background-color: #79d2f2;
+    color: #001f28;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 18px;
+    border-radius: 0.625rem;
+    transition: background-color 150ms, transform 80ms;
+    cursor: pointer;
+  }
+  .btn-accent:hover  { background-color: #b7eaff; }
+  .btn-accent:active { transform: scale(0.98); }
+
+  /* ─ Pill chip (filter) ─ */
+  .chip {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #d9dce1;
+    border-radius: 9999px;
+    background-color: #ffffff;
+    color: #181c21;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.015em;
+    transition: all 120ms;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .chip:hover            { border-color: #171819; }
+  .chip.chip-active      { background-color: #171819; color: #ffffff; border-color: #171819; }
+
+  /* ─ Pastel job card header backgrounds ─ */
+  .card-pastel-peach    { background-color: #FBE0CE; }
+  .card-pastel-mint     { background-color: #D4F4E9; }
+  .card-pastel-lavender { background-color: #E5DDF9; }
+  .card-pastel-blue     { background-color: #DDF1FC; }
+  .card-pastel-pink     { background-color: #F8DDF0; }
+  .card-pastel-grey     { background-color: #E9EDF2; }
+
+  /* ─ Surface card (white, bordered) ─ */
+  .surface-card {
+    background-color: #ffffff;
+    border: 1px solid #d9dce1;
+    border-radius: 1rem;
+    box-shadow: 0 2px 6px rgba(23,24,25,.04);
+    transition: box-shadow 200ms, border-color 200ms, transform 200ms;
+  }
+  .surface-card:hover {
+    border-color: #171819;
+    box-shadow: 0 8px 20px rgba(23,24,25,.08);
+    transform: translateY(-1px);
   }
 
-  .btn-outline {
-    @apply inline-block px-6 py-3 border-2 border-indeed-blue text-indeed-blue font-semibold rounded-xl
-           hover:bg-indeed-blue hover:text-white transition;
+  /* ─ Dark KPI tile (recruiter dashboard) ─ */
+  .kpi-tile {
+    padding: 1.25rem;
+    border-radius: 1rem;
+    background-color: rgba(255,255,255,0.05);
+    backdrop-filter: blur(4px);
+    transition: background-color 200ms;
   }
+  .kpi-tile:hover { background-color: rgba(255,255,255,0.08); }
 
-  .btn-gradient {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl
-           bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold
-           hover:shadow-lg hover:shadow-blue-500/25
-           transition-all duration-300 relative overflow-hidden;
-  }
-
-  /* ── Glass card ── */
-  .glass-card {
-    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md
-           border border-white/40 dark:border-slate-700/50;
-  }
-
-  .glass-nav {
-    @apply bg-white/70 dark:bg-slate-950/70 backdrop-blur-xl
-           border-b border-white/40 dark:border-slate-800/50;
-  }
-
-  /* ── Gradient text ── */
-  .text-gradient {
-    @apply bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600
-           bg-clip-text text-transparent;
-  }
-
-  /* ── Shimmer effect on hover (buttons) ── */
-  .btn-shimmer {
-    position: relative;
-    overflow: hidden;
-  }
-  .btn-shimmer::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.35),
-      transparent
-    );
-    transform: translateX(-100%);
-    transition: transform 0.6s;
-    pointer-events: none;
-  }
-  .btn-shimmer:hover::after {
-    transform: translateX(100%);
-  }
-
-  /* ── Card with hover lift ── */
-  .card-hover {
-    @apply transition-all duration-300
-           hover:-translate-y-1
-           hover:shadow-2xl hover:shadow-blue-500/10;
-  }
-
-  /* ── Skeleton loader ── */
+  /* ─ Skeleton loader ─ */
   .skeleton {
-    @apply rounded-3xl
-           bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100
-           dark:from-slate-800 dark:via-slate-700 dark:to-slate-800
-           bg-[length:1000px_100%] animate-shimmer;
+    border-radius: 0.75rem;
+    background: linear-gradient(90deg, #ebeef6, #dfe2ea, #ebeef6);
+    background-size: 800px 100%;
+    animation: shimmer 2s linear infinite;
   }
+
+  /* ─ Input field ─ */
+  .input-field {
+    width: 100%;
+    padding: 0.625rem 1rem;
+    border: 1px solid #d9dce1;
+    border-radius: 0.5rem;
+    font-size: 14px;
+    line-height: 20px;
+    color: #181c21;
+    background-color: #ffffff;
+    transition: border-color 150ms, box-shadow 150ms;
+    outline: none;
+  }
+  .input-field:focus {
+    border-color: #79d2f2;
+    box-shadow: 0 0 0 2px rgba(121,210,242,0.25);
+  }
+  .input-field::placeholder { color: #75777a; }
 }
 
-/* ═══════════════ UTILITIES ═══════════════ */
+/* ── Utilities ──────────────────────────────────────── */
 @layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.4s ease-out both;
-  }
-  .animate-fade-up {
-    animation: fade-up 0.4s ease-out both;
-  }
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-  .animate-slide-in {
-    animation: slide-in 0.4s ease-out both;
-  }
-  .animate-pulse-slow {
-    animation: pulse-slow 3s ease-in-out infinite;
-  }
+  .animate-fade-up   { animation: fade-up  0.4s ease-out both; }
+  .animate-slide-in  { animation: slide-in 0.4s ease-out both; }
+  .animate-float     { animation: float    6s ease-in-out infinite; }
+  .animate-shimmer   { animation: shimmer  2s linear infinite; }
+  .animate-fade-in   { animation: fadeIn   0.4s ease-out both; }
+  .animate-pulse-slow{ animation: pulse-slow 3s ease-in-out infinite; }
 
-  /* Text balance for headings */
-  .text-balance {
-    text-wrap: balance;
-  }
+  /* Stitch text roles */
+  .text-balance { text-wrap: balance; }
 
-  /* Line clamp helpers */
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+  /* Line clamp */
+  .line-clamp-1 { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+  .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .line-clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+  /* Stitch cyan focus ring */
+  .focus-ring { box-shadow: 0 0 0 2px #79d2f2; }
+
+  /* Scrollbar hide (panels) */
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 }

@@ -10,15 +10,31 @@ interface AuthSocket extends Socket {
 
 let io: Server | null = null;
 
-// userId -> Set of socket IDs (multiple tabs)
 const onlineUsers = new Map<string, Set<string>>();
 
-export function initSocket(httpServer: HTTPServer) {
+export function initSocket(httpServer: HTTPServer, allowedOrigins?: string[]) {
+  const origins =
+    allowedOrigins && allowedOrigins.length > 0
+      ? allowedOrigins
+      : (env.CLIENT_URL || '')
+          .split(',')
+          .map((u) => u.trim())
+          .filter(Boolean);
+
   io = new Server(httpServer, {
-    cors: { origin: env.CLIENT_URL, credentials: true },
+    cors: {
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (origins.includes(origin)) return callback(null, origin); // ✅ specific origin
+        return callback(new Error(`Socket CORS blocked for origin: ${origin}`));
+      },
+      credentials: true,
+      methods: ['GET', 'POST'],
+    },
   });
 
-  // JWT auth on connection
+  console.log(`🔌 Socket.IO CORS allowed origins: ${origins.join(', ') || '(none)'}`);
+
   io.use((socket: AuthSocket, next) => {
     const token = socket.handshake.auth?.token as string | undefined;
     if (!token) return next(new Error('No token'));
@@ -39,7 +55,6 @@ export function initSocket(httpServer: HTTPServer) {
     socket.join(`user:${userId}`);
     io!.emit('user_online', { userId });
 
-    // Send message
     socket.on(
       'send_message',
       async (
@@ -68,12 +83,10 @@ export function initSocket(httpServer: HTTPServer) {
       },
     );
 
-    // Typing indicator
     socket.on('typing', ({ receiverId, isTyping }: { receiverId: string; isTyping: boolean }) => {
       io!.to(`user:${receiverId}`).emit('user_typing', { userId, isTyping });
     });
 
-    // Mark read
     socket.on('mark_read', async ({ senderId }: { senderId: string }) => {
       try {
         await prisma.message.updateMany({

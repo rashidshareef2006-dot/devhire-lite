@@ -1,92 +1,88 @@
 import { Link } from 'react-router-dom';
 
+const FOOTER_LINKS = {
+  'For Candidates': [
+    { to: '/jobs',      label: 'Browse Jobs' },
+    { to: '/saved',     label: 'Saved Jobs' },
+    { to: '/register',  label: 'Create Account' },
+  ],
+  'For Recruiters': [
+    { to: '/post-job',  label: 'Post a Job' },
+    { to: '/dashboard', label: 'Dashboard' },
+    { to: '/register',  label: 'Start Hiring' },
+  ],
+  'Company': [
+    { to: '/about',     label: 'About' },
+    { to: '/messages',  label: 'Contact' },
+    { to: '/about',     label: 'Privacy' },
+  ],
+};
+
 export function Footer() {
   return (
-    <footer className="bg-indeed-ink text-slate-300 mt-auto">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Brand */}
-        <div>
-          <p className="font-bold text-white text-lg">🚀 DevHire Lite</p>
-          <p className="mt-3 text-sm text-slate-400 leading-relaxed">
-            Find developer jobs, faster. Hire the best talent, faster.
-          </p>
-        </div>
+    <footer className="bg-[#171819] text-white/70 mt-auto">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-10 py-12">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
 
-        {/* For Candidates */}
-        <div>
-          <h3 className="font-semibold text-white mb-3">For Candidates</h3>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <Link to="/jobs" className="hover:text-white transition">
-                Browse Jobs
-              </Link>
-            </li>
-            <li>
-              <Link to="/jobs" className="hover:text-white transition">
-                Companies
-              </Link>
-            </li>
-            <li>
-              <Link to="/jobs" className="hover:text-white transition">
-                Salary Guide
-              </Link>
-            </li>
-          </ul>
-        </div>
+          {/* Brand */}
+          <div className="lg:col-span-1">
+            <Link to="/" className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-[#79d2f2] flex items-center justify-center">
+                <span className="material-symbols-outlined text-[#001f28] text-lg">work</span>
+              </div>
+              <span className="text-white font-semibold text-[18px] tracking-tight">
+                DevHire<span className="text-[#79d2f2]">Lite</span>
+              </span>
+            </Link>
+            <p className="text-[13px] leading-relaxed text-white/50">
+              Find elite developer roles faster. Connect talent with the teams building the future.
+            </p>
 
-        {/* For Recruiters */}
-        <div>
-          <h3 className="font-semibold text-white mb-3">For Recruiters</h3>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <Link to="/post-job" className="hover:text-white transition">
-                Post a Job
-              </Link>
-            </li>
-            <li>
-              <Link to="/about" className="hover:text-white transition">
-                Pricing
-              </Link>
-            </li>
-            <li>
-              <Link to="/dashboard" className="hover:text-white transition">
-                Dashboard
-              </Link>
-            </li>
-          </ul>
-        </div>
+            {/* Cyan accent bar */}
+            <div className="mt-6 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#79d2f2] animate-pulse" />
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-[#79d2f2]">
+                Live Platform
+              </span>
+            </div>
+          </div>
 
-        {/* Company */}
-        <div>
-          <h3 className="font-semibold text-white mb-3">Company</h3>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <Link to="/about" className="hover:text-white transition">
-                About
-              </Link>
-            </li>
-            <li>
-              <Link to="/about" className="hover:text-white transition">
-                Privacy
-              </Link>
-            </li>
-            <li>
-              <Link to="/about" className="hover:text-white transition">
-                Contact
-              </Link>
-            </li>
-          </ul>
+          {/* Link columns */}
+          {Object.entries(FOOTER_LINKS).map(([title, links]) => (
+            <div key={title}>
+              <h3 className="text-[13px] font-semibold text-white uppercase tracking-wider mb-4">
+                {title}
+              </h3>
+              <ul className="space-y-3">
+                {links.map(({ to, label }) => (
+                  <li key={to + label}>
+                    <Link
+                      to={to}
+                      className="text-[13px] text-white/50 hover:text-[#79d2f2] transition-colors"
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-slate-800 py-6 text-center text-sm text-slate-500">
-        <Link
-          to="/admin/login"
-          className="hover:text-indeed-blue dark:hover:text-indigo-400 transition-colors cursor-pointer"
-        >
-          © 2025 DevHire Lite. Built with ❤️
-        </Link>
+      <div className="border-t border-white/10 py-5">
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <Link
+            to="/admin/login"
+            className="text-[12px] text-white/30 hover:text-[#79d2f2] transition-colors"
+          >
+            © 2025 DevHire Lite. All rights reserved.
+          </Link>
+          <span className="text-[12px] text-white/30">
+            Built with precision &amp; care.
+          </span>
+        </div>
       </div>
     </footer>
   );

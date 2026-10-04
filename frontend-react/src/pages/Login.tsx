@@ -3,7 +3,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Input } from '@/components/common/Input';
-import { Button } from '@/components/common/Button';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useToast } from '@/contexts/ToastContext';
 import { authService } from '@/services/auth.service';
@@ -107,9 +106,40 @@ export function Login() {
               </a>
             </div>
 
-            <Button type="submit" isLoading={isSubmitting} className="w-full">
-              Sign In
-            </Button>
+            {/* ✅ FIX: Explicit styles — guaranteed visible submit button */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </button>
           </form>
 
           <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-6">
@@ -122,11 +152,7 @@ export function Login() {
             </Link>
           </p>
 
-          {import.meta.env.DEV && (
-            <div className="mt-6 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 text-xs text-center text-indigo-700 dark:text-indigo-300">
-              🔑 Test: <b>rashi@test.com</b> / <b>password123</b>
-            </div>
-          )}
+          {/* ✅ FIX: Test credentials hint block DELETED */}
         </div>
       </div>
     </div>

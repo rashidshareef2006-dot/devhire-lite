@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Badge } from '@/components/common/Badge';
-import { Button } from '@/components/common/Button';
-import { Modal } from '@/components/common/Modal';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useSavedJobsStore } from '@/store/useSavedJobsStore';
+import { applicationsService } from '@/services/applications.service';
 import { jobsService } from '@/services/jobs.service';
 import type { Job } from '@/types';
 import { Pencil } from 'lucide-react';
@@ -42,14 +41,36 @@ export function JobDetail() {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
-  const [coverLetter, setCoverLetter] = useState('');
+  const [hasApplied, setHasApplied] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
   const { toast } = useToast();
   const { isAuthenticated, user } = useAuthStore();
   const { toggle, isSaved } = useSavedJobsStore();
+
+  useEffect(() => {
+    if (!id || !isAuthenticated || user?.role !== 'CANDIDATE') {
+      setHasApplied(false);
+      return;
+    }
+
+    let cancelled = false;
+    applicationsService
+      .mine()
+      .then((applications) => {
+        if (!cancelled) {
+          setHasApplied(applications.some((application) => application.jobId === id));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setHasApplied(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isAuthenticated, user?.role]);
 
   useEffect(() => {
     if (!id) return;
@@ -94,7 +115,10 @@ export function JobDetail() {
         <h1 className="text-2xl font-bold text-indeed-ink dark:text-white">
           {error || 'Job not found'}
         </h1>
-        <Link to="/jobs" className="inline-block mt-6 btn-primary">
+        <Link
+          to="/jobs"
+          className="inline-block mt-6 px-5 py-3 rounded-xl font-semibold text-sm bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+        >
           Back to Jobs
         </Link>
       </div>
@@ -103,14 +127,15 @@ export function JobDetail() {
 
   const saved = isSaved(job.id);
   const isOwner = user?.id === job.postedById || user?.role === 'ADMIN';
-  const isRecruiter = user?.role === 'RECRUITER' || user?.role === 'ADMIN';
+  const isCandidate = user?.role === 'CANDIDATE';
 
   const handleSaveToggle = () => {
     toggle(job.id);
     toast(saved ? 'Removed from saved' : '❤️ Job saved!', 'success');
   };
 
-  const handleApplyClick = () => {
+  // ✅ Direct apply — no modal, no cover letter
+  const handleApplyClick = async () => {
     if (!isAuthenticated) {
       toast('Please login first', 'error');
       return;
@@ -119,16 +144,13 @@ export function JobDetail() {
       toast('Only candidates can apply to jobs', 'error');
       return;
     }
-    setIsModalOpen(true);
-  };
+    if (hasApplied || isApplying) return;
 
-  const handleConfirmApply = async () => {
     setIsApplying(true);
     try {
-      await jobsService.apply(job.id, coverLetter || undefined);
+      await jobsService.apply(job.id);
+      setHasApplied(true);
       toast('✅ Application submitted successfully!', 'success');
-      setIsModalOpen(false);
-      setCoverLetter('');
     } catch (err: any) {
       const msg =
         err?.response?.data?.error?.message ||
@@ -179,13 +201,7 @@ export function JobDetail() {
                 <Pencil className="w-4 h-4" />
                 Edit Job
               </button>
-            ) : (
-              !isRecruiter && (
-                <Button onClick={handleApplyClick} className="flex-1 sm:flex-none">
-                  Apply Now
-                </Button>
-              )
-            )}
+            ) : null}
 
             <button
               onClick={handleSaveToggle}
@@ -213,88 +229,93 @@ export function JobDetail() {
         )}
       </div>
 
-      {/* Description */}
-      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 p-6 sm:p-8 mt-6 shadow-sm transition-colors">
-        <h2 className="text-xl font-semibold text-indeed-ink dark:text-white mb-4">
-          Job Description
-        </h2>
-        <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
-          {job.description}
-        </p>
-      </section>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+        <div className="space-y-6">
+          {/* Description */}
+          <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 p-6 sm:p-8 shadow-sm transition-colors">
+            <h2 className="text-xl font-semibold text-indeed-ink dark:text-white mb-4">
+              Job Description
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+              {job.description}
+            </p>
+          </section>
 
-      {/* Requirements */}
-      <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 p-6 sm:p-8 mt-6 shadow-sm transition-colors">
-        <h2 className="text-xl font-semibold text-indeed-ink dark:text-white mb-4">
-          Requirements
-        </h2>
-        <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
-          {job.requirements}
-        </p>
-      </section>
-
-      {/* Bottom CTA — sirf candidates ko */}
-      {!isOwner && !isRecruiter && (
-        <div className="bg-indeed-blue rounded-2xl p-6 sm:p-8 mt-6 text-white text-center">
-          <h2 className="text-xl font-bold">Interested in this role?</h2>
-          <p className="text-indigo-100 mt-2 text-sm">
-            Apply now and get a response within 3 days.
-          </p>
-          <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={handleApplyClick}
-              className="px-6 py-3 bg-white text-indeed-blue font-semibold rounded-xl hover:bg-indigo-50 transition"
-            >
-              Apply Now
-            </button>
-            <button
-              onClick={handleSaveToggle}
-              className="px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold rounded-xl hover:bg-white/20 transition inline-flex items-center justify-center gap-2"
-            >
-              <span>{saved ? '❤️' : '🤍'}</span>
-              {saved ? 'Saved' : 'Save Job'}
-            </button>
-          </div>
+          {/* Requirements */}
+          <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 p-6 sm:p-8 shadow-sm transition-colors">
+            <h2 className="text-xl font-semibold text-indeed-ink dark:text-white mb-4">
+              Requirements
+            </h2>
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+              {job.requirements}
+            </p>
+          </section>
         </div>
-      )}
 
-      {/* Apply Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Apply for this job"
-      >
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-          Applying for{' '}
-          <strong className="text-slate-900 dark:text-white">{job.title}</strong> at{' '}
-          <strong className="text-slate-900 dark:text-white">{job.company}</strong>
-        </p>
+        {/* Apply section */}
+        {(!isAuthenticated || isCandidate) && (
+          <aside className="w-full rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm lg:sticky lg:top-24">
+            <h2 className="text-lg font-semibold text-indeed-ink dark:text-white">
+              Interested in this role?
+            </h2>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+              Apply now and get a response within 3 days.
+            </p>
 
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-          Cover letter (optional)
-        </label>
-        <textarea
-          value={coverLetter}
-          onChange={(e) => setCoverLetter(e.target.value)}
-          rows={4}
-          placeholder="Tell the recruiter why you're a great fit..."
-          className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indeed-blue resize-none"
-        />
-
-        <div className="flex gap-3 mt-6">
-          <Button
-            variant="outline"
-            onClick={() => setIsModalOpen(false)}
-            className="flex-1"
-            disabled={isApplying}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleConfirmApply} isLoading={isApplying} className="flex-1">
-            Submit Application
-          </Button>
-        </div>
-      </Modal>
+            {!isAuthenticated ? (
+              <Link
+                to="/login"
+                className="mt-5 block w-full text-center px-4 py-3 rounded-xl font-semibold text-sm bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+              >
+                Login to Apply
+              </Link>
+            ) : hasApplied ? (
+              <button
+                type="button"
+                disabled
+                className="mt-5 w-full px-4 py-3 rounded-xl font-semibold text-sm bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+              >
+                ✓ Already Applied
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleApplyClick}
+                disabled={isApplying}
+                className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isApplying ? (
+                  <>
+                    <svg
+                      className="animate-spin h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                    Applying...
+                  </>
+                ) : (
+                  'Apply Now'
+                )}
+              </button>
+            )}
+          </aside>
+        )}
+      </div>
 
       {/* Edit Job Modal — sirf owner/ADMIN */}
       {editOpen && isOwner && (
