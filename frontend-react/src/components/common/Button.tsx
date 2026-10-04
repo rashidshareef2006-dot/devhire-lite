@@ -11,10 +11,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-indeed-blue text-white hover:bg-indeed-hover focus:ring-indeed-blue',
-  outline: 'border-2 border-indeed-blue text-indeed-blue hover:bg-indeed-blue hover:text-white focus:ring-indeed-blue',
-  ghost: 'text-slate-700 hover:bg-slate-100 focus:ring-slate-300',
-  danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+  primary:
+    'bg-brand text-white hover:bg-brand-hover focus:ring-brand shadow-[0_4px_12px_rgba(249,115,22,0.25)]',
+  outline:
+    'border-2 border-brand text-brand hover:bg-brand hover:text-white focus:ring-brand',
+  ghost:
+    'text-ink-soft hover:bg-soft hover:text-ink focus:ring-line-strong',
+  danger:
+    'bg-danger text-white hover:brightness-90 focus:ring-danger',
 };
 
 const sizeClasses: Record<Size, string> = {
@@ -32,7 +36,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={isLoading}
         className={cn(
           'inline-flex items-center justify-center gap-2 font-semibold rounded-xl',
-          'focus:outline-none focus:ring-2 focus:ring-offset-2 transition',
+          'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-page transition',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           variantClasses[variant],
           sizeClasses[size],

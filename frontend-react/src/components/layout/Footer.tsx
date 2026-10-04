@@ -20,28 +20,32 @@ const FOOTER_LINKS = {
 
 export function Footer() {
   return (
-    <footer className="bg-[#171819] text-white/70 mt-auto">
+    <footer className="bg-nav text-white/70 mt-auto">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10 py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
 
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-[#79d2f2] flex items-center justify-center">
-                <span className="material-symbols-outlined text-[#001f28] text-lg">work</span>
+              <div className="w-9 h-9 rounded-xl bg-brand flex items-center justify-center shadow-[0_0_0_3px_rgba(249,115,22,0.15)]">
+                <span
+                  className="material-symbols-outlined text-white text-[20px]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  work
+                </span>
               </div>
-              <span className="text-white font-semibold text-[18px] tracking-tight">
-                DevHire<span className="text-[#79d2f2]">Lite</span>
+              <span className="text-white font-bold text-[18px] tracking-tight">
+                DevHire<span className="text-brand">Lite</span>
               </span>
             </Link>
             <p className="text-[13px] leading-relaxed text-white/50">
               Find elite developer roles faster. Connect talent with the teams building the future.
             </p>
 
-            {/* Cyan accent bar */}
             <div className="mt-6 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#79d2f2] animate-pulse" />
-              <span className="text-[11px] font-semibold uppercase tracking-widest text-[#79d2f2]">
+              <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-brand">
                 Live Platform
               </span>
             </div>
@@ -58,7 +62,7 @@ export function Footer() {
                   <li key={to + label}>
                     <Link
                       to={to}
-                      className="text-[13px] text-white/50 hover:text-[#79d2f2] transition-colors"
+                      className="text-[13px] text-white/50 hover:text-brand transition-colors"
                     >
                       {label}
                     </Link>
@@ -70,12 +74,11 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom bar */}
       <div className="border-t border-white/10 py-5">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between gap-3">
           <Link
             to="/admin/login"
-            className="text-[12px] text-white/30 hover:text-[#79d2f2] transition-colors"
+            className="text-[12px] text-white/30 hover:text-brand transition-colors"
           >
             © 2025 DevHire Lite. All rights reserved.
           </Link>

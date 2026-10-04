@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { SlidersHorizontal, X } from 'lucide-react';
 import { JobCard } from '@/components/jobs/JobCard';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
@@ -10,23 +11,23 @@ import type { Job, JobType } from '@/types';
 const PER_PAGE = 6;
 
 const JOB_TYPE_OPTIONS: { label: string; value: JobType }[] = [
-  { label: 'Full-time', value: 'FULL_TIME' },
-  { label: 'Part-time', value: 'PART_TIME' },
-  { label: 'Contract', value: 'CONTRACT' },
+  { label: 'Full-time',  value: 'FULL_TIME' },
+  { label: 'Part-time',  value: 'PART_TIME' },
+  { label: 'Contract',   value: 'CONTRACT' },
   { label: 'Internship', value: 'INTERNSHIP' },
 ];
 
 export function Jobs() {
   const [search, setSearch] = useState('');
-  const [types, setTypes] = useState<JobType[]>([]);
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [types, setTypes]   = useState<JobType[]>([]);
+  const [jobs, setJobs]     = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
+  const [error, setError]     = useState<string | null>(null);
+  const [page, setPage]       = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
 
   const debouncedSearch = useDebounce(search, 300);
 
-  // Press "/" to focus search (skip when typing in inputs)
   useKeyboardShortcut(
     { key: '/', ignoreInputs: true },
     () => {
@@ -34,11 +35,8 @@ export function Jobs() {
       input?.focus();
     },
   );
-
-  // Press "Escape" to clear search
   useKeyboardShortcut({ key: 'Escape' }, () => setSearch(''));
 
-  // Fetch from API
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -46,9 +44,7 @@ export function Jobs() {
 
     jobsService
       .list({ q: debouncedSearch || undefined, limit: 50 })
-      .then(({ jobs }) => {
-        if (!cancelled) setJobs(jobs);
-      })
+      .then(({ jobs }) => { if (!cancelled) setJobs(jobs); })
       .catch((err) => {
         if (!cancelled) {
           const msg =
@@ -58,13 +54,9 @@ export function Jobs() {
           setError(msg);
         }
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      .finally(() => { if (!cancelled) setLoading(false); });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [debouncedSearch]);
 
   const filtered = useMemo(() => {
@@ -86,155 +78,176 @@ export function Jobs() {
     setPage(1);
   };
 
+  const activeFilterCount = types.length;
+
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-slate-50 dark:bg-slate-950 min-h-screen transition-colors">
-      <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-indeed-ink dark:text-white">
-          Browse Jobs
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 mt-2">
-          <span className="font-semibold text-indeed-blue dark:text-indigo-400">
-            {filtered.length}
-          </span>{' '}
-          jobs found
-        </p>
-      </div>
+    <div className="bg-page min-h-screen w-full max-w-full overflow-x-hidden">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-5 lg:px-8 py-6 sm:py-10 w-full">
 
-      <div className="bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-2 mb-8">
-        <Input
-          name="search"
-          type="search"
-          placeholder="Search by title, company, or location... (press / to focus)"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="flex-1"
-          aria-label="Search jobs"
-        />
-      </div>
+        {/* ── Header ── */}
+        <div className="mb-6 sm:mb-7">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-ink">
+            Browse Jobs
+          </h1>
+          <p className="text-ink-soft mt-2 text-[13px] sm:text-[14px]">
+            <span className="font-bold text-brand">{filtered.length}</span> jobs found
+          </p>
+        </div>
 
-      <div className="grid lg:grid-cols-4 gap-8">
-        <aside className="lg:col-span-1">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sticky top-24">
-            <h2 className="font-semibold text-indeed-ink dark:text-white mb-4">Filters</h2>
+        {/* ── Search + Filters ── */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 w-full max-w-3xl">
+          <div className="relative flex-1 min-w-0">
+            <Input
+              name="search"
+              type="search"
+              placeholder="Search by title, company, or location..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="h-11 sm:h-12 rounded-2xl"
+              aria-label="Search jobs"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowFilters((v) => !v)}
+            className={`inline-flex items-center justify-center gap-2 px-5 h-11 sm:h-12 rounded-2xl text-[13px] sm:text-[14px] font-semibold transition-colors shrink-0 ${
+              showFilters || activeFilterCount
+                ? 'bg-brand text-white hover:bg-brand-hover'
+                : 'bg-nav text-white hover:bg-nav-elev'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-white/25 text-[11px]">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
 
-            <fieldset className="mb-6">
-              <legend className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+        {/* ── Filter panel ── */}
+        {showFilters && (
+          <div className="mb-6 p-4 sm:p-5 bg-surface rounded-2xl border border-line animate-fade-up w-full max-w-3xl">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-[13px] font-bold uppercase tracking-wider text-ink-mute">
                 Job Type
-              </legend>
-              <div className="space-y-2 text-sm">
-                {JOB_TYPE_OPTIONS.map((t) => (
-                  <label
-                    key={t.value}
-                    className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={types.includes(t.value)}
-                      onChange={() => toggleType(t.value)}
-                      className="rounded text-indeed-blue focus:ring-indeed-blue"
-                    />
-                    <span>{t.label}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowFilters(false)}
+                className="p-1 rounded-lg text-ink-mute hover:text-ink hover:bg-soft transition-colors"
+                aria-label="Close filters"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-            <Button variant="outline" size="sm" onClick={clearAll} className="w-full">
-              Clear all
+            <div className="flex flex-wrap gap-2">
+              {JOB_TYPE_OPTIONS.map((t) => {
+                const active = types.includes(t.value);
+                return (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => toggleType(t.value)}
+                    className={`chip ${active ? 'chip-active' : ''}`}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {(search || types.length > 0) && (
+              <div className="mt-4 pt-4 border-t border-line">
+                <Button variant="ghost" size="sm" onClick={clearAll}>
+                  Clear all filters
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Loading ── */}
+        {loading && (
+          <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="skeleton h-64 sm:h-72 rounded-2xl" />
+            ))}
+          </div>
+        )}
+
+        {/* ── Error ── */}
+        {!loading && error && (
+          <div className="text-center py-16 bg-surface rounded-2xl border border-danger/30 max-w-2xl mx-auto">
+            <p className="text-5xl mb-3">⚠️</p>
+            <h3 className="text-lg font-semibold text-danger">Failed to load jobs</h3>
+            <p className="text-ink-soft mt-1">{error}</p>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => window.location.reload()}
+              className="mt-4"
+            >
+              Retry
             </Button>
           </div>
-        </aside>
+        )}
 
-        <section className="lg:col-span-3">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Showing <span className="font-semibold">{pageItems.length}</span> results
-            </p>
+        {/* ── Grid ── */}
+        {!loading && !error && pageItems.length > 0 && (
+          <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {pageItems.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
           </div>
+        )}
 
-          {loading && (
-            <div className="grid gap-4">
-              {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="animate-pulse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 h-40"
-                />
-              ))}
-            </div>
-          )}
+        {/* ── Empty ── */}
+        {!loading && !error && pageItems.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-5xl mb-3">🔍</p>
+            <h3 className="text-lg font-semibold text-ink">No jobs found</h3>
+            <p className="text-ink-soft mt-1">Try changing filters or search terms.</p>
+          </div>
+        )}
 
-          {!loading && error && (
-            <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-red-200 dark:border-red-900/50">
-              <p className="text-5xl mb-3">⚠️</p>
-              <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">
-                Failed to load jobs
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">{error}</p>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => window.location.reload()}
-                className="mt-4"
+        {/* ── Pagination ── */}
+        {totalPages > 1 && (
+          <nav className="mt-8 sm:mt-10 flex flex-wrap justify-center gap-2" aria-label="Pagination">
+            <button
+              type="button"
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+              className="w-9 h-9 rounded-full border border-line-strong text-ink disabled:opacity-40 hover:border-brand hover:text-brand transition-colors"
+            >
+              ←
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPage(p)}
+                className={`w-9 h-9 rounded-full text-[13px] font-semibold transition-colors ${
+                  p === page
+                    ? 'bg-brand text-white'
+                    : 'border border-line-strong text-ink hover:border-brand hover:text-brand'
+                }`}
               >
-                Retry
-              </Button>
-            </div>
-          )}
-
-          {!loading && !error && pageItems.length > 0 && (
-            <div className="grid gap-4">
-              {pageItems.map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
-            </div>
-          )}
-
-          {!loading && !error && pageItems.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-5xl mb-3">🔍</p>
-              <h3 className="text-lg font-semibold text-indeed-ink dark:text-white">
-                No jobs found
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">
-                Try changing filters or search terms.
-              </p>
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <nav className="mt-8 flex justify-center gap-2" aria-label="Pagination">
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={page === 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                ←
-              </Button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <Button
-                  key={p}
-                  variant={p === page ? 'primary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setPage(p)}
-                >
-                  {p}
-                </Button>
-              ))}
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={page === totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                →
-              </Button>
-            </nav>
-          )}
-        </section>
+                {p}
+              </button>
+            ))}
+            <button
+              type="button"
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+              className="w-9 h-9 rounded-full border border-line-strong text-ink disabled:opacity-40 hover:border-brand hover:text-brand transition-colors"
+            >
+              →
+            </button>
+          </nav>
+        )}
       </div>
     </div>
   );

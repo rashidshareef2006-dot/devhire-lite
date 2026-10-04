@@ -41,6 +41,18 @@ export interface PublicStats {
   totalCompanies: number;
 }
 
+/** Build FormData from input + optional image */
+function toFormData(input: Partial<CreateJobInput>, image?: File): FormData {
+  const form = new FormData();
+  Object.entries(input).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') {
+      form.append(k, String(v));
+    }
+  });
+  if (image) form.append('image', image);
+  return form;
+}
+
 export const jobsService = {
   async list(
     filters: JobFilters = {},
@@ -59,13 +71,29 @@ export const jobsService = {
     return data.data;
   },
 
-  async create(input: CreateJobInput): Promise<Job> {
-    const { data } = await api.post<ApiListResponse<Job>>('/jobs', input);
+  async create(input: CreateJobInput, image?: File): Promise<Job> {
+    // If no image → plain JSON (faster + backward compatible)
+    if (!image) {
+      const { data } = await api.post<ApiListResponse<Job>>('/jobs', input);
+      return data.data;
+    }
+    // With image → multipart/form-data
+    const form = toFormData(input, image);
+    const { data } = await api.post<ApiListResponse<Job>>('/jobs', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return data.data;
   },
 
-  async update(id: string, input: Partial<CreateJobInput>): Promise<Job> {
-    const { data } = await api.put<ApiListResponse<Job>>(`/jobs/${id}`, input);
+  async update(id: string, input: Partial<CreateJobInput>, image?: File): Promise<Job> {
+    if (!image) {
+      const { data } = await api.put<ApiListResponse<Job>>(`/jobs/${id}`, input);
+      return data.data;
+    }
+    const form = toFormData(input, image);
+    const { data } = await api.put<ApiListResponse<Job>>(`/jobs/${id}`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return data.data;
   },
 
@@ -77,12 +105,10 @@ export const jobsService = {
     await api.post(`/jobs/${id}/apply`, { coverLetter });
   },
 
-  // 👇 NEW — homepage stats
   async stats(): Promise<PublicStats> {
     const { data } = await api.get<ApiListResponse<PublicStats>>('/jobs/stats');
     return data.data;
   },
 
-  deleteJob: (id: string) =>
-  api.delete(`/jobs/${id}`).then((r) => r.data),
+  deleteJob: (id: string) => api.delete(`/jobs/${id}`).then((r) => r.data),
 };

@@ -42,6 +42,7 @@ export interface Job {
   location: string;
   type: JobType;
   category: string;
+  imageUrl?: string | null;    // ⬅️ NEW
   salaryMin?: number | null;
   salaryMax?: number | null;
   currency: string;
@@ -52,10 +53,7 @@ export interface Job {
   updatedAt: string;
   postedById: string;
 
-  // Optional relation (joins)
   postedBy?: Pick<User, 'id' | 'name' | 'email' | 'avatar'>;
-
-  // Optional meta (backend may add)
   _count?: { applications: number };
 }
 

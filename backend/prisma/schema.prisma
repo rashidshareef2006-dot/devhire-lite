@@ -45,6 +45,7 @@ model Job {
   location     String
   type         JobType
   category     String
+  imageUrl     String?                    // ⬅️ NEW
   salaryMin    Int?
   salaryMax    Int?
   currency     String        @default("INR")

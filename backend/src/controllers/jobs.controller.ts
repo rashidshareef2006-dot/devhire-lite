@@ -91,8 +91,11 @@ export async function createJob(req: Request, res: Response, next: NextFunction)
 
     const data = createJobSchema.parse(req.body);
 
+    // 📸 Uploaded image (if any)
+    const imageUrl = req.file ? `/uploads/jobs/${req.file.filename}` : undefined;
+
     const job = await prisma.job.create({
-      data: { ...data, postedById: req.user.sub },
+      data: { ...data, imageUrl, postedById: req.user.sub },
       include: {
         postedBy: { select: { id: true, name: true, company: true } },
       },
@@ -116,7 +119,14 @@ export async function updateJob(req: Request, res: Response, next: NextFunction)
     }
 
     const data = createJobSchema.partial().parse(req.body);
-    const job = await prisma.job.update({ where: { id: req.params.id }, data });
+    const updateData: Record<string, unknown> = { ...data };
+
+    // 📸 Replace image only if a new file uploaded
+    if (req.file) {
+      updateData.imageUrl = `/uploads/jobs/${req.file.filename}`;
+    }
+
+    const job = await prisma.job.update({ where: { id: req.params.id }, data: updateData });
 
     res.json({ success: true, data: job });
   } catch (err) {
@@ -124,7 +134,6 @@ export async function updateJob(req: Request, res: Response, next: NextFunction)
   }
 }
 
-// ✅ DELETE job — owner ya ADMIN only
 export async function deleteJob(req: Request, res: Response, next: NextFunction) {
   try {
     if (!req.user) throw new AppError(401, 'UNAUTHORIZED', 'Unauthorized');
@@ -139,7 +148,6 @@ export async function deleteJob(req: Request, res: Response, next: NextFunction)
       throw new AppError(403, 'FORBIDDEN', 'You can only delete your own jobs');
     }
 
-    // Cascade handles applications + saved_jobs
     await prisma.job.delete({ where: { id: req.params.id } });
 
     res.json({ success: true, data: { id: existing.id, deleted: true } });
@@ -174,17 +182,13 @@ export async function applyToJob(req: Request, res: Response, next: NextFunction
   }
 }
 
-// PUBLIC: Homepage stats
 export async function getPublicStats(_req: Request, res: Response, next: NextFunction) {
   try {
     const [totalJobs, totalUsers, totalApplications, distinctCompanies] = await Promise.all([
       prisma.job.count({ where: { isActive: true } }),
       prisma.user.count(),
       prisma.application.count(),
-      prisma.job.findMany({
-        distinct: ['company'],
-        select: { company: true },
-      }),
+      prisma.job.findMany({ distinct: ['company'], select: { company: true } }),
     ]);
 
     res.json({

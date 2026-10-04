@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 
-// Routes where footer is hidden
 const HIDE_FOOTER_ROUTES = ['/messages'];
 
 export function Layout() {
@@ -18,10 +17,10 @@ export function Layout() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#f8f9ff' }}>
+    <div className="min-h-screen flex flex-col bg-page text-ink">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-[#79d2f2] focus:text-[#001f28] focus:px-4 focus:py-2 focus:rounded-lg focus:font-semibold"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-brand focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:font-semibold"
       >
         Skip to main content
       </a>
@@ -35,4 +34,4 @@ export function Layout() {
       {!hideFooter && <Footer />}
     </div>
   );
-}
+}
