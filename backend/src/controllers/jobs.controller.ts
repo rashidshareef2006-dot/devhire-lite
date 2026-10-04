@@ -9,6 +9,7 @@ const createJobSchema = z.object({
   location: z.string().min(2),
   type: z.enum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP']),
   category: z.string().min(2),
+  imageUrl: z.string().optional(),   // ⬅️ NEW: from image library
   salaryMin: z.coerce.number().int().nonnegative().optional(),
   salaryMax: z.coerce.number().int().nonnegative().optional(),
   description: z.string().min(20),
@@ -45,9 +46,7 @@ export async function listJobs(req: Request, res: Response, next: NextFunction) 
 
     const [jobs, total] = await Promise.all([
       prisma.job.findMany({
-        where,
-        skip,
-        take: limit,
+        where, skip, take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
           postedBy: { select: { id: true, name: true, company: true } },
@@ -62,9 +61,7 @@ export async function listJobs(req: Request, res: Response, next: NextFunction) 
       data: jobs,
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
 export async function getJob(req: Request, res: Response, next: NextFunction) {
@@ -76,13 +73,9 @@ export async function getJob(req: Request, res: Response, next: NextFunction) {
         _count: { select: { applications: true } },
       },
     });
-
     if (!job) throw new AppError(404, 'JOB_NOT_FOUND', 'Job not found');
-
     res.json({ success: true, data: job });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
 export async function createJob(req: Request, res: Response, next: NextFunction) {
@@ -91,20 +84,13 @@ export async function createJob(req: Request, res: Response, next: NextFunction)
 
     const data = createJobSchema.parse(req.body);
 
-    // 📸 Uploaded image (if any)
-    const imageUrl = req.file ? `/uploads/jobs/${req.file.filename}` : undefined;
-
     const job = await prisma.job.create({
-      data: { ...data, imageUrl, postedById: req.user.sub },
-      include: {
-        postedBy: { select: { id: true, name: true, company: true } },
-      },
+      data: { ...data, postedById: req.user.sub },
+      include: { postedBy: { select: { id: true, name: true, company: true } } },
     });
 
     res.status(201).json({ success: true, data: job });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
 export async function updateJob(req: Request, res: Response, next: NextFunction) {
@@ -119,19 +105,9 @@ export async function updateJob(req: Request, res: Response, next: NextFunction)
     }
 
     const data = createJobSchema.partial().parse(req.body);
-    const updateData: Record<string, unknown> = { ...data };
-
-    // 📸 Replace image only if a new file uploaded
-    if (req.file) {
-      updateData.imageUrl = `/uploads/jobs/${req.file.filename}`;
-    }
-
-    const job = await prisma.job.update({ where: { id: req.params.id }, data: updateData });
-
+    const job = await prisma.job.update({ where: { id: req.params.id }, data });
     res.json({ success: true, data: job });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
 export async function deleteJob(req: Request, res: Response, next: NextFunction) {
@@ -149,11 +125,8 @@ export async function deleteJob(req: Request, res: Response, next: NextFunction)
     }
 
     await prisma.job.delete({ where: { id: req.params.id } });
-
     res.json({ success: true, data: { id: existing.id, deleted: true } });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
 export async function applyToJob(req: Request, res: Response, next: NextFunction) {
@@ -177,9 +150,7 @@ export async function applyToJob(req: Request, res: Response, next: NextFunction
     });
 
     res.status(201).json({ success: true, data: application });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
 export async function getPublicStats(_req: Request, res: Response, next: NextFunction) {
@@ -200,7 +171,5 @@ export async function getPublicStats(_req: Request, res: Response, next: NextFun
         totalCompanies: distinctCompanies.length,
       },
     });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }

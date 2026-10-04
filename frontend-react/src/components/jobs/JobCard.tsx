@@ -7,13 +7,13 @@ import type { Job } from '@/types';
    Helpers
 ═══════════════════════════════════════════════════════════ */
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api')
-  .replace(/\/api\/?$/, '');
-
 function getImageUrl(path: string): string {
   if (!path) return '';
-  if (path.startsWith('http')) return path;
-  return `${API_BASE}${path}`;
+  if (path.startsWith('http')) return path;         // absolute URL
+  if (path.startsWith('/jobs/')) return path;       // public folder — served by Firebase
+  const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api')
+    .replace(/\/api\/?$/, '');
+  return `${API_BASE}${path}`;                      // legacy /uploads/... on backend
 }
 
 /* ── Pastel gradient per category ── */
@@ -91,7 +91,6 @@ export function JobCard({ job }: { job: Job }) {
   return (
     <div className="group relative w-full bg-surface rounded-2xl overflow-hidden border border-line shadow-[0_2px_6px_rgba(23,24,25,0.04)] hover:shadow-[0_12px_28px_rgba(23,24,25,0.10)] hover:-translate-y-1 hover:border-brand/50 transition-all duration-300">
 
-      {/* Whole-card click target */}
       <Link
         to={`/jobs/${job.id}`}
         className="absolute inset-0 z-10"
@@ -103,7 +102,6 @@ export function JobCard({ job }: { job: Job }) {
         className="relative h-32 sm:h-36 p-3 sm:p-4 flex items-end overflow-hidden"
         style={hasImage ? undefined : { background: pastel }}
       >
-        {/* Image (if present) */}
         {hasImage && (
           <>
             <img
@@ -112,16 +110,13 @@ export function JobCard({ job }: { job: Job }) {
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover"
               onError={(e) => {
-                // Fallback to pastel gradient if image fails
                 (e.currentTarget as HTMLImageElement).style.display = 'none';
               }}
             />
-            {/* Dark gradient overlay for text legibility */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
           </>
         )}
 
-        {/* NEW badge */}
         {fresh && (
           <span className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-success text-white text-[10px] font-bold uppercase tracking-wider shadow-sm">
             <span
@@ -134,7 +129,6 @@ export function JobCard({ job }: { job: Job }) {
           </span>
         )}
 
-        {/* Bookmark */}
         <button
           type="button"
           onClick={handleSave}
@@ -153,7 +147,6 @@ export function JobCard({ job }: { job: Job }) {
           </span>
         </button>
 
-        {/* Company row (bottom-left) */}
         <div className="relative z-[1] flex items-center gap-2.5 sm:gap-3 w-full min-w-0 pr-20 sm:pr-24">
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white flex items-center justify-center text-[15px] sm:text-[18px] font-bold text-ink shadow-md shrink-0">
             {job.company.charAt(0).toUpperCase()}
@@ -176,14 +169,7 @@ export function JobCard({ job }: { job: Job }) {
           </div>
         </div>
 
-        {/* Job type pill (bottom-right) */}
-        <span
-          className={`absolute bottom-2.5 right-2.5 sm:bottom-3 sm:right-3 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide ${
-            hasImage
-              ? 'bg-white/90 backdrop-blur-sm text-ink'
-              : 'bg-white/90 backdrop-blur-sm text-ink'
-          }`}
-        >
+        <span className="absolute bottom-2.5 right-2.5 sm:bottom-3 sm:right-3 px-2 sm:px-2.5 py-0.5 rounded-full bg-white/90 backdrop-blur-sm text-ink text-[10px] font-bold tracking-wide">
           {JOB_TYPE_LABEL[job.type]}
         </span>
       </div>
@@ -194,7 +180,6 @@ export function JobCard({ job }: { job: Job }) {
           {job.title}
         </h3>
 
-        {/* Category + location chips */}
         <div className="mt-2 flex flex-wrap gap-1.5">
           <span className="px-2 py-0.5 rounded-full bg-soft text-ink-soft text-[10.5px] sm:text-[11px] font-semibold">
             {job.category}
@@ -206,7 +191,6 @@ export function JobCard({ job }: { job: Job }) {
           )}
         </div>
 
-        {/* Footer row */}
         <div className="mt-3 pt-3 border-t border-line flex items-center justify-between gap-2">
           <div className="flex flex-col min-w-0">
             {salary ? (
